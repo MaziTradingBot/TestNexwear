@@ -1,0 +1,44 @@
+# NexWear — Render Blueprint
+# Provisions a Next.js web service + a managed PostgreSQL database.
+# Deploy: push to GitHub, then "New +" → "Blueprint" in the Render dashboard.
+services:
+  - type: web
+    name: nexwear
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install --legacy-peer-deps && npx prisma db push --accept-data-loss && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: nexwear-db
+          property: connectionString
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: NEXTAUTH_URL
+        sync: false # set to your Render URL, e.g. https://nexwear.onrender.com
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false # same as NEXTAUTH_URL
+      - key: NODE_VERSION
+        value: "20.18.0"
+      # Optional SMTP for password-reset / contact emails (logged to console if unset)
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+
+databases:
+  - name: nexwear-db
+    plan: free
+    region: frankfurt
+    databaseName: nexwear
+    user: nexwear

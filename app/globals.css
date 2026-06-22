@@ -1,0 +1,124 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-serif: "Cormorant Garamond";
+    --font-sans: "Inter";
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-white text-ink antialiased;
+    font-feature-settings: "ss01", "cv01";
+  }
+
+  ::selection {
+    @apply bg-ink text-white;
+  }
+
+  /* Visible focus rings for keyboard navigability */
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-none ring-2 ring-ink ring-offset-2;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif;
+  }
+}
+
+@layer components {
+  /* ---- Buttons ---- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 text-[0.78rem] font-medium uppercase tracking-wide2 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn bg-ink px-8 py-3.5 text-white hover:bg-charcoal active:scale-[0.99];
+  }
+  .btn-outline {
+    @apply btn border border-ink bg-transparent px-8 py-3.5 text-ink hover:bg-ink hover:text-white;
+  }
+  .btn-gold {
+    @apply btn bg-gold px-8 py-3.5 text-white hover:bg-gold-dark;
+  }
+  .btn-ghost {
+    @apply btn px-4 py-2 text-ink hover:text-gold;
+  }
+  /* On-image label button (Answear/Ted Baker style) */
+  .btn-label {
+    @apply btn border border-white/0 bg-white px-7 py-3 text-ink shadow-sm backdrop-blur transition-all hover:bg-ink hover:text-white;
+  }
+  .btn-label-outline {
+    @apply btn border border-white bg-transparent px-7 py-3 text-white hover:bg-white hover:text-ink;
+  }
+
+  /* ---- Typographic accents ---- */
+  .eyebrow {
+    @apply text-[0.7rem] font-medium uppercase tracking-luxe text-stone;
+  }
+  .section-title {
+    @apply text-center font-serif text-3xl font-light uppercase tracking-wide2 text-ink md:text-4xl;
+  }
+  .link-underline {
+    @apply relative after:absolute after:-bottom-0.5 after:left-0 after:h-px after:w-0 after:bg-current after:transition-all after:duration-300 hover:after:w-full;
+  }
+
+  /* ---- Inputs ---- */
+  .input {
+    @apply w-full border border-line bg-white px-4 py-3 text-sm text-ink placeholder:text-mist focus:border-ink focus:outline-none;
+  }
+  .label {
+    @apply mb-1.5 block text-[0.7rem] font-medium uppercase tracking-wide2 text-stone;
+  }
+
+  /* ---- Surfaces ---- */
+  .card {
+    @apply border border-line bg-white transition-shadow duration-300;
+  }
+
+  /* ---- Skeleton shimmer ---- */
+  .skeleton {
+    @apply relative overflow-hidden bg-sand;
+  }
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: shimmer 1.6s infinite;
+  }
+}
+
+@layer utilities {
+  .container-luxe {
+    @apply mx-auto w-full max-w-8xl px-5 lg:px-8;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  /* pause marquee on hover */
+  .marquee-track {
+    animation: marquee 28s linear infinite;
+  }
+  .marquee-paused:hover .marquee-track {
+    animation-play-state: paused;
+  }
+}

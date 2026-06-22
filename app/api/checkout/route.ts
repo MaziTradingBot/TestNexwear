@@ -1,0 +1,175 @@
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { checkoutSchema } from "@/lib/validations/checkout";
+import { PaymentStatus, ShippingMethod, DeliveryProvider, PaymentMethod } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
+
+function genOrderNumber() {
+  return `NX-${Date.now().toString(36).toUpperCase()}-${Math.floor(Math.random() * 9000 + 1000)}`;
+}
+
+function genTracking(provider: string) {
+  const prefix = provider.slice(0, 3).toUpperCase();
+  return `${prefix}${Math.floor(Math.random() * 9e9 + 1e9)}`;
+}
+
+export async function POST(req: Request) {
+  const session = await getServerSession(authOptions);
+
+  const body = await req.json().catch(() => null);
+  const parsed = checkoutSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid checkout details", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+  const { items, shipping, deliveryMethod, deliveryProvider, paymentMethod, couponCode, notes } = parsed.data;
+
+  // 1. Re-price from DB (never trust client prices)
+  const products = await prisma.product.findMany({
+    where: { id: { in: items.map((i) => i.productId) }, isActive: true },
+    include: { variants: true },
+  });
+
+  let subtotal = 0;
+  const orderItems: {
+    productId: string;
+    variantId?: string;
+    title: string;
+    image: string;
+    size?: string;
+    color?: string;
+    unitPrice: number;
+    quantity: number;
+  }[] = [];
+  for (const item of items) {
+    const product = products.find((p) => p.id === item.productId);
+    if (!product) {
+      return NextResponse.json({ error: `A product in your bag is no longer available` }, { status: 404 });
+    }
+    const variant = item.variantId ? product.variants.find((v) => v.id === item.variantId) : undefined;
+    const unitPrice = Number(product.discountPrice ?? product.price);
+    subtotal += unitPrice * item.quantity;
+    orderItems.push({
+      productId: product.id,
+      variantId: variant?.id,
+      title: product.title,
+      image: item.image ?? product.id,
+      size: item.size ?? undefined,
+      color: item.color ?? undefined,
+      unitPrice,
+      quantity: item.quantity,
+    });
+  }
+
+  // 2. Coupon
+  let discount = 0;
+  let appliedCode: string | null = null;
+  if (couponCode) {
+    const coupon = await prisma.coupon.findUnique({ where: { code: couponCode.toUpperCase() } });
+    if (coupon && coupon.isActive && subtotal >= Number(coupon.minSpend)) {
+      discount =
+        coupon.type === "PERCENT"
+          ? (subtotal * Number(coupon.value)) / 100
+          : Number(coupon.value);
+      discount = Math.min(Math.round(discount * 100) / 100, subtotal);
+      appliedCode = coupon.code;
+      await prisma.coupon.update({ where: { id: coupon.id }, data: { usedCount: { increment: 1 } } }).catch(() => null);
+    }
+  }
+
+  // 3. Shipping
+  const rate = await prisma.shippingRate.findUnique({
+    where: { country_method: { country: shipping.country, method: deliveryMethod as ShippingMethod } },
+  });
+  const shippingCost = rate ? Number(rate.price) : deliveryMethod === "EXPRESS" ? 24.95 : 9.95;
+  const etaMax = rate?.etaDaysMax ?? (deliveryMethod === "EXPRESS" ? 3 : 10);
+
+  const total = Math.max(0, subtotal - discount) + shippingCost;
+  const orderNumber = genOrderNumber();
+  const trackingNumber = genTracking(deliveryProvider);
+  const estimatedDelivery = new Date(Date.now() + etaMax * 86_400_000);
+
+  const paymentStatus =
+    paymentMethod === "CASH_ON_DELIVERY" ? PaymentStatus.COD_PENDING : PaymentStatus.SIMULATED;
+
+  // 4. Persist order + items + payment, decrement stock
+  try {
+    const order = await prisma.$transaction(async (tx) => {
+      const created = await tx.order.create({
+        data: {
+          orderNumber,
+          userId: session?.user?.id ?? null,
+          status: paymentStatus === PaymentStatus.SIMULATED ? "PAID" : "PENDING",
+          paymentMethod: paymentMethod as PaymentMethod,
+          paymentStatus,
+          deliveryMethod: deliveryMethod as ShippingMethod,
+          deliveryProvider: deliveryProvider as DeliveryProvider,
+          trackingNumber,
+          customerName: shipping.fullName,
+          customerEmail: shipping.email,
+          customerPhone: shipping.phone,
+          shipCountry: shipping.country,
+          shipCity: shipping.city,
+          shipAddress: shipping.address,
+          shipPostalCode: shipping.postalCode,
+          couponCode: appliedCode,
+          subtotal,
+          discount,
+          shippingCost,
+          total,
+          estimatedDelivery,
+          notes,
+          items: { create: orderItems },
+          payment: {
+            create: {
+              provider: paymentMethod as PaymentMethod,
+              providerRefId: `SIM-${Date.now().toString(36).toUpperCase()}`,
+              amount: total,
+              status: paymentStatus,
+            },
+          },
+        },
+      });
+
+      for (const item of orderItems) {
+        if (item.variantId) {
+          await tx.productVariant.update({
+            where: { id: item.variantId },
+            data: { stock: { decrement: item.quantity } },
+          }).catch(() => null);
+        }
+      }
+
+      // Award loyalty points (1 per $1) to logged-in users
+      if (session?.user?.id) {
+        await tx.user.update({
+          where: { id: session.user.id },
+          data: { loyaltyPoints: { increment: Math.floor(total) } },
+        }).catch(() => null);
+      }
+
+      return created;
+    });
+
+    return NextResponse.json({
+      order: {
+        orderNumber: order.orderNumber,
+        trackingNumber: order.trackingNumber,
+        deliveryMethod: order.deliveryMethod,
+        deliveryProvider: order.deliveryProvider,
+        estimatedDelivery: order.estimatedDelivery?.toISOString(),
+        total: Number(order.total),
+        email: order.customerEmail,
+        paymentMethod: order.paymentMethod,
+      },
+    });
+  } catch (e) {
+    console.error("POST /api/checkout", e);
+    return NextResponse.json({ error: "Could not place your order. Please try again." }, { status: 500 });
+  }
+}
