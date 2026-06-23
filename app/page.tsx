@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { HeroSlider, type HeroBanner } from "@/components/home/HeroSlider";
+import { LandingHero } from "@/components/home/LandingHero";
 import { CategoryGrid } from "@/components/home/CategoryGrid";
 import { EditorialSplit } from "@/components/home/EditorialSplit";
 import { BrandMarquee } from "@/components/home/BrandMarquee";
@@ -9,7 +9,6 @@ import { ProductCarousel } from "@/components/product/ProductCarousel";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import {
-  getBanners,
   getBrands,
   getNewArrivals,
   getTrending,
@@ -19,18 +18,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const FALLBACK_BANNERS: HeroBanner[] = [
-  {
-    id: "fallback-1",
-    eyebrow: "Summer Sale",
-    title: "Up To 50% Off",
-    subtitle: "The season's most-wanted pieces, now reduced.",
-    ctaLabel: "Shop Sale",
-    ctaHref: "/sale",
-    imageUrl: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2000&q=80",
-  },
-];
-
 const INSTAGRAM = [
   "1485462537746-965f33f7f6a7", "1539008835657-9e8e9680c956",
   "1521572163474-6864f9cf17ab", "1542291026-7eec264c27ff",
@@ -38,9 +25,8 @@ const INSTAGRAM = [
 ];
 
 export default async function HomePage() {
-  const [banners, brands, newArrivals, trending, bestSellers, saleProducts] =
+  const [brands, newArrivals, trending, bestSellers, saleProducts] =
     await Promise.all([
-      getBanners(),
       getBrands(),
       getNewArrivals(8),
       getTrending(8),
@@ -48,21 +34,9 @@ export default async function HomePage() {
       getSaleProducts(10),
     ]);
 
-  const heroBanners: HeroBanner[] = banners.length
-    ? banners.map((b) => ({
-        id: b.id,
-        eyebrow: b.eyebrow,
-        title: b.title,
-        subtitle: b.subtitle,
-        ctaLabel: b.ctaLabel,
-        ctaHref: b.ctaHref,
-        imageUrl: b.imageUrl,
-      }))
-    : FALLBACK_BANNERS;
-
   return (
     <div className="space-y-20 pb-4">
-      <HeroSlider banners={heroBanners} />
+      <LandingHero />
 
       {/* Category grid */}
       <section className="container-luxe">
