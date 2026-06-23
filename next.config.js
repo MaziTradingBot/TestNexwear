@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
+    // Unoptimized so admins can use product image URLs from ANY host
+    // without next/image domain errors.
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "plus.unsplash.com" },

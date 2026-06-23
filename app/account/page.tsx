@@ -30,6 +30,7 @@ export default async function AccountPage() {
 
   return (
     <AccountDashboard
+      isAdmin={user.role === "ADMIN"}
       user={{ name: user.name ?? "Customer", email: user.email, loyaltyPoints: user.loyaltyPoints }}
       orders={orders.map((o) => ({
         orderNumber: o.orderNumber,

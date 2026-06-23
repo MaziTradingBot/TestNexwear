@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { Package, User, MapPin, Lock, Heart, Award, LogOut } from "lucide-react";
+import { Package, User, MapPin, Lock, Heart, Award, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -51,10 +51,12 @@ export function AccountDashboard({
   user,
   orders,
   addresses,
+  isAdmin = false,
 }: {
   user: { name: string; email: string; loyaltyPoints: number };
   orders: Order[];
   addresses: AddressT[];
+  isAdmin?: boolean;
 }) {
   const [tab, setTab] = useState("orders");
 
@@ -92,6 +94,11 @@ export function AccountDashboard({
             <Link href="/wishlist" className="flex items-center gap-3 px-4 py-3 text-sm text-stone hover:bg-bone hover:text-ink">
               <Heart className="h-4 w-4" /> Wishlist
             </Link>
+            {isAdmin && (
+              <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-sm text-gold hover:bg-bone">
+                <LayoutDashboard className="h-4 w-4" /> Admin Panel
+              </Link>
+            )}
             <button
               onClick={() => signOut({ callbackUrl: "/" })}
               className="flex items-center gap-3 px-4 py-3 text-sm text-stone hover:bg-bone hover:text-ink"

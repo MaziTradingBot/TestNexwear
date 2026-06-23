@@ -3,9 +3,7 @@ import { Inter, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { SITE } from "@/lib/constants";
 import { Providers } from "@/components/providers/Providers";
-import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { StoreChrome } from "@/components/layout/StoreChrome";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,10 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <body className="flex min-h-screen flex-col">
         <Providers>
-          <AnnouncementBar />
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <StoreChrome>{children}</StoreChrome>
         </Providers>
       </body>
     </html>
