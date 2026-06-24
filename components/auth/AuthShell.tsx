@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 
 export function AuthShell({
@@ -13,7 +14,14 @@ export function AuthShell({
   footer?: React.ReactNode;
 }) {
   return (
-    <div className="container-luxe flex min-h-[70vh] items-center justify-center py-16">
+    <div className="container-luxe relative flex min-h-[70vh] items-center justify-center py-16">
+      <Link
+        href="/"
+        aria-label="Back to home"
+        className="absolute left-5 top-6 flex items-center gap-1.5 text-xs uppercase tracking-wide2 text-stone transition-colors hover:text-ink lg:left-8"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back
+      </Link>
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
           <Logo variant="black" href="/" className="mb-6" />

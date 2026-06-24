@@ -55,9 +55,6 @@ function LoginForm() {
           {loading ? "Signing in…" : "Sign In"}
         </Button>
       </form>
-      <p className="mt-5 rounded-none border border-line bg-bone p-3 text-center text-xs text-stone">
-        Demo: customer@nexwear.com / Customer123!
-      </p>
     </AuthShell>
   );
 }

@@ -1,11 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Play, Pause, Volume2, VolumeX, Sparkles, Star, ArrowDown } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { Sparkles, Star, ArrowDown } from "lucide-react";
 
 const POSTER =
   "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2000&q=80";
@@ -17,44 +15,21 @@ const float = (delay = 0) => ({
 });
 
 /**
- * Cinematic, floating landing hero — autoplaying AI/film background video with
- * glassy floating UI cards. Drop your own AI-generated clip at
- * `public/hero-video.mp4` to swap the film.
+ * Cinematic, floating landing hero — silent autoplaying background video with
+ * glassy floating UI cards. Drop your own clip at `public/hero-video.mp4`.
  */
 export function LandingHero() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(true);
-  const [muted, setMuted] = useState(true);
-
-  function togglePlay() {
-    const v = videoRef.current;
-    if (!v) return;
-    if (v.paused) {
-      v.play();
-      setPlaying(true);
-    } else {
-      v.pause();
-      setPlaying(false);
-    }
-  }
-  function toggleMute() {
-    const v = videoRef.current;
-    if (!v) return;
-    v.muted = !v.muted;
-    setMuted(v.muted);
-  }
-
   return (
-    <section className="relative h-[94vh] min-h-[640px] w-full overflow-hidden bg-ink">
-      {/* Background film */}
+    <section className="relative h-[92vh] min-h-[560px] w-full overflow-hidden bg-ink">
+      {/* Background film (silent, decorative) */}
       <video
-        ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
         autoPlay
         muted
         loop
         playsInline
         poster={POSTER}
+        aria-hidden="true"
       >
         <source src="/hero-video.mp4" type="video/mp4" />
       </video>
@@ -62,24 +37,22 @@ export function LandingHero() {
       {/* Cinematic overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/40 to-ink/10" />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-ink/30" />
-
-      {/* Grain / vignette */}
       <div className="pointer-events-none absolute inset-0 shadow-[inset_0_0_180px_60px_rgba(0,0,0,0.55)]" />
 
       {/* Content */}
       <div className="container-luxe relative z-10 flex h-full flex-col justify-center">
         <motion.div {...float(0.05)} className="max-w-2xl text-white">
-          <span className="inline-flex items-center gap-2 border border-white/30 bg-white/5 px-3 py-1.5 text-[0.62rem] font-medium uppercase tracking-luxe text-white/90 backdrop-blur">
+          <span className="inline-flex items-center gap-2 border border-white/30 bg-white/5 px-3 py-1.5 text-[0.6rem] font-medium uppercase tracking-luxe text-white/90 backdrop-blur sm:text-[0.62rem]">
             <Sparkles className="h-3.5 w-3.5 text-gold" />
-            AI-Curated · New Season Film
+            AI-Curated · New Season
           </span>
 
-          <h1 className="mt-6 font-serif text-6xl font-light uppercase leading-[0.92] tracking-wide2 md:text-8xl">
+          <h1 className="mt-6 font-serif text-5xl font-light uppercase leading-[0.92] tracking-wide2 sm:text-6xl md:text-7xl lg:text-8xl">
             Modern Luxury
             <span className="block text-gold-light">In Motion</span>
           </h1>
 
-          <p className="mt-6 max-w-md text-base leading-relaxed text-white/85 md:text-lg">
+          <p className="mt-6 max-w-md text-sm leading-relaxed text-white/85 sm:text-base md:text-lg">
             An intelligently styled edit of the season&apos;s most-wanted pieces — designed
             in-house, shipped worldwide.
           </p>
@@ -91,22 +64,12 @@ export function LandingHero() {
             <Link href="/men" className="btn-label-outline">
               Shop Men
             </Link>
-            <button
-              onClick={togglePlay}
-              className="btn border border-white/40 bg-transparent px-6 py-3 text-white transition-colors hover:bg-white hover:text-ink"
-            >
-              {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              {playing ? "Pause Film" : "Play Film"}
-            </button>
           </div>
         </motion.div>
       </div>
 
       {/* Floating glass card — trending product */}
-      <motion.div
-        {...float(0.5)}
-        className="absolute right-6 top-28 z-10 hidden lg:block"
-      >
+      <motion.div {...float(0.5)} className="absolute right-6 top-28 z-10 hidden lg:block">
         <motion.div
           animate={{ y: [0, -14, 0] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
@@ -133,10 +96,7 @@ export function LandingHero() {
       </motion.div>
 
       {/* Floating rating chip */}
-      <motion.div
-        {...float(0.75)}
-        className="absolute right-16 bottom-32 z-10 hidden md:block"
-      >
+      <motion.div {...float(0.75)} className="absolute right-16 bottom-32 z-10 hidden md:block">
         <motion.div
           animate={{ y: [0, 12, 0] }}
           transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
@@ -155,10 +115,7 @@ export function LandingHero() {
       </motion.div>
 
       {/* Floating stat chip */}
-      <motion.div
-        {...float(0.9)}
-        className="absolute left-6 bottom-28 z-10 hidden md:flex"
-      >
+      <motion.div {...float(0.9)} className="absolute left-6 bottom-28 z-10 hidden md:flex">
         <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
@@ -171,17 +128,6 @@ export function LandingHero() {
           </p>
         </motion.div>
       </motion.div>
-
-      {/* Video controls */}
-      <div className="absolute bottom-6 right-6 z-10 flex gap-2">
-        <button
-          onClick={toggleMute}
-          aria-label={muted ? "Unmute" : "Mute"}
-          className="flex h-10 w-10 items-center justify-center border border-white/30 bg-white/10 text-white backdrop-blur transition hover:bg-white hover:text-ink"
-        >
-          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </button>
-      </div>
 
       {/* Scroll cue */}
       <div className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 text-white/70 md:flex">
