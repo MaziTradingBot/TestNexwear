@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { CountdownTimer, demoSaleTarget } from "@/components/CountdownTimer";
+import { CountdownTimer } from "@/components/CountdownTimer";
+import { demoSaleTarget } from "@/lib/sale";
 import { CollectionView } from "@/components/product/CollectionView";
 import type { SearchParams } from "@/lib/parse-filters";
 

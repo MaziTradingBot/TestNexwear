@@ -61,11 +61,3 @@ export function CountdownTimer({
     </div>
   );
 }
-
-/** A stable end-of-day-in-3-days target for demo flash sales. */
-export function demoSaleTarget(): number {
-  const d = new Date();
-  d.setHours(23, 59, 59, 0);
-  d.setDate(d.getDate() + 3);
-  return d.getTime();
-}

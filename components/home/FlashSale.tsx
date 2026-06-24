@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CountdownTimer, demoSaleTarget } from "@/components/CountdownTimer";
+import { CountdownTimer } from "@/components/CountdownTimer";
+import { demoSaleTarget } from "@/lib/sale";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
 import type { ProductCard } from "@/lib/queries";
 
