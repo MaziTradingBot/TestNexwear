@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
@@ -51,9 +51,38 @@ export function ProductForm({
   const [form, setForm] = useState<ProductFormValues>({ ...EMPTY, ...initial });
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   function set<K extends keyof ProductFormValues>(key: K, value: ProductFormValues[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  async function handleFiles(files: FileList | null) {
+    if (!files?.length) return;
+    setUploading(true);
+    setError("");
+    try {
+      const { upload } = await import("@vercel/blob/client");
+      const urls: string[] = [];
+      for (const file of Array.from(files)) {
+        const res = await upload(file.name, file, {
+          access: "public",
+          handleUploadUrl: "/api/admin/upload",
+        });
+        urls.push(res.url);
+      }
+      setForm((f) => ({ ...f, images: [...f.images.filter(Boolean), ...urls] }));
+      show(urls.length > 1 ? `${urls.length} images uploaded` : "Image uploaded");
+    } catch (e) {
+      const msg = (e as Error).message ?? "";
+      setError(
+        msg.includes("store") || msg.includes("token") || msg.includes("BLOB")
+          ? "Upload failed — connect a Vercel Blob store first (see setup)."
+          : `Upload failed: ${msg || "please try again"}`,
+      );
+    } finally {
+      setUploading(false);
+    }
   }
 
   async function submit(e: React.FormEvent) {
@@ -127,10 +156,23 @@ export function ProductForm({
         {/* Images */}
         <div className="border border-line bg-white p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-sm font-medium uppercase tracking-wide2">Images (URLs)</h3>
-            <button type="button" onClick={() => set("images", [...form.images, ""])} className="flex items-center gap-1 text-xs text-ink hover:text-gold">
-              <Plus className="h-4 w-4" /> Add image
-            </button>
+            <h3 className="text-sm font-medium uppercase tracking-wide2">Images</h3>
+            <div className="flex items-center gap-4">
+              <label className={`flex cursor-pointer items-center gap-1 text-xs ${uploading ? "text-mist" : "text-ink hover:text-gold"}`}>
+                <Upload className="h-4 w-4" /> {uploading ? "Uploading…" : "Upload photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={uploading}
+                  onChange={(e) => handleFiles(e.target.files)}
+                  className="hidden"
+                />
+              </label>
+              <button type="button" onClick={() => set("images", [...form.images, ""])} className="flex items-center gap-1 text-xs text-stone hover:text-ink">
+                <Plus className="h-4 w-4" /> Paste URL
+              </button>
+            </div>
           </div>
           <div className="space-y-3">
             {form.images.map((url, i) => (

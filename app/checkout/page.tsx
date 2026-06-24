@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Truck, Zap } from "lucide-react";
@@ -98,6 +99,15 @@ export default function CheckoutPage() {
   return (
     <div className="container-luxe py-12">
       <CheckoutSteps current={0} />
+      {!session && (
+        <p className="mx-auto mb-8 max-w-xl text-center text-xs text-stone">
+          Checking out as a guest — no account needed.{" "}
+          <Link href="/login?callbackUrl=/checkout" className="text-ink underline underline-offset-4 hover:text-gold">
+            Sign in
+          </Link>{" "}
+          for faster checkout &amp; order tracking.
+        </p>
+      )}
       <div className="grid gap-12 lg:grid-cols-[1fr_380px]">
         <form onSubmit={submit} className="space-y-10">
           {/* Shipping info */}

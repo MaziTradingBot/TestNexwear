@@ -60,7 +60,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
     setError("");
     addItem(buildLine());
     show("Added to bag");
-    if (buyNow) router.push("/cart");
+    if (buyNow) router.push("/checkout");
   }
 
   return (
