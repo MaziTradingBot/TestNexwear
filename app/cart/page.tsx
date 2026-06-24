@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useCartStore, type CartLine } from "@/store/cart";
 import { useCouponStore } from "@/store/coupon";
 import { useToast } from "@/components/ui/toast";
+import { useT } from "@/components/providers/I18nProvider";
 import { formatPrice } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -26,6 +27,7 @@ export default function CartPage() {
 
   const { coupon, apply, clear, discountFor } = useCouponStore();
   const show = useToast((s) => s.show);
+  const t = useT();
 
   const [code, setCode] = useState("");
   const [couponError, setCouponError] = useState("");
@@ -70,7 +72,7 @@ export default function CartPage() {
     return (
       <div className="container-luxe flex flex-col items-center py-28 text-center">
         <ShoppingBag className="h-12 w-12 text-mist" strokeWidth={1} />
-        <h1 className="mt-6 font-serif text-3xl font-light uppercase tracking-wide2">Your Bag Is Empty</h1>
+        <h1 className="mt-6 font-serif text-3xl font-light uppercase tracking-wide2">{t("cart.empty")}</h1>
         <p className="mt-2 text-sm text-stone">Discover the latest arrivals and find something you love.</p>
         <Link href="/women" className="mt-8">
           <Button>Start Shopping</Button>
@@ -81,7 +83,7 @@ export default function CartPage() {
 
   return (
     <div className="container-luxe py-12">
-      <h1 className="mb-2 font-serif text-4xl font-light uppercase tracking-wide2">Shopping Bag</h1>
+      <h1 className="mb-2 font-serif text-4xl font-light uppercase tracking-wide2">{t("cart.title")}</h1>
       <p className="mb-8 text-sm text-stone">{active.length} item{active.length !== 1 && "s"}</p>
 
       <div className="grid gap-12 lg:grid-cols-[1fr_380px]">
@@ -141,7 +143,7 @@ export default function CartPage() {
         {/* Summary */}
         <aside className="lg:sticky lg:top-28 lg:self-start">
           <div className="border border-line p-6">
-            <h2 className="mb-5 text-sm font-medium uppercase tracking-wide2">Order Summary</h2>
+            <h2 className="mb-5 text-sm font-medium uppercase tracking-wide2">{t("cart.summary")}</h2>
 
             {/* Coupon */}
             <form onSubmit={applyCoupon} className="mb-5">
@@ -175,27 +177,27 @@ export default function CartPage() {
 
             <dl className="space-y-3 border-t border-line pt-5 text-sm">
               <div className="flex justify-between">
-                <dt className="text-stone">Subtotal</dt>
+                <dt className="text-stone">{t("cart.subtotal")}</dt>
                 <dd>{formatPrice(subtotal)}</dd>
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-gold">
-                  <dt>Discount</dt>
+                  <dt>{t("cart.discount")}</dt>
                   <dd>−{formatPrice(discount)}</dd>
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-stone">Shipping</dt>
-                <dd className="text-stone">Calculated at checkout</dd>
+                <dt className="text-stone">{t("cart.shipping")}</dt>
+                <dd className="text-stone">—</dd>
               </div>
               <div className="flex justify-between border-t border-line pt-4 text-base font-medium">
-                <dt>Total</dt>
+                <dt>{t("cart.total")}</dt>
                 <dd>{formatPrice(Math.max(0, subtotal - discount))}</dd>
               </div>
             </dl>
 
             <Button full size="lg" className="mt-6" onClick={() => router.push("/checkout")} disabled={active.length === 0}>
-              Checkout <ArrowRight className="h-4 w-4" />
+              {t("common.checkout")} <ArrowRight className="h-4 w-4" />
             </Button>
             <Link href="/women" className="mt-3 block text-center text-xs text-stone underline-offset-4 hover:underline">
               Continue Shopping

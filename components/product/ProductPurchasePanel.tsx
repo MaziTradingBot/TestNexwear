@@ -9,6 +9,7 @@ import { Stars } from "@/components/ui/stars";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
 import { useToast } from "@/components/ui/toast";
+import { useT } from "@/components/providers/I18nProvider";
 import { formatPrice, discountPercent } from "@/lib/format";
 import type { ProductDetail } from "@/lib/queries";
 import { cn } from "@/lib/cn";
@@ -19,6 +20,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
   const toggleWish = useWishlistStore((s) => s.toggle);
   const wished = useWishlistStore((s) => s.items.some((i) => i.productId === product.id));
   const show = useToast((s) => s.show);
+  const t = useT();
 
   const colors = useMemo(() => {
     const map = new Map<string, string | null>();
@@ -54,7 +56,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
 
   function handleAdd(buyNow = false) {
     if (!size) {
-      setError("Please select a size");
+      setError(t("product.selectSize"));
       return;
     }
     setError("");
@@ -92,7 +94,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
       {/* Color */}
       <div className="mt-8">
         <p className="label">
-          Color: <span className="text-ink">{color}</span>
+          {t("product.color")}: <span className="text-ink">{color}</span>
         </p>
         <div className="flex flex-wrap gap-2.5">
           {colors.map((c) => (
@@ -117,12 +119,12 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
       {/* Size */}
       <div className="mt-7">
         <div className="mb-2 flex items-center justify-between">
-          <p className="label mb-0">Size</p>
+          <p className="label mb-0">{t("product.size")}</p>
           <button
             onClick={() => setSizeChart(true)}
             className="flex items-center gap-1.5 text-[0.7rem] uppercase tracking-wide2 text-stone hover:text-ink"
           >
-            <Ruler className="h-3.5 w-3.5" /> Size Guide
+            <Ruler className="h-3.5 w-3.5" /> {t("product.sizeGuide")}
           </button>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -155,7 +157,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
 
       {/* Quantity */}
       <div className="mt-7">
-        <p className="label">Quantity</p>
+        <p className="label">{t("product.quantity")}</p>
         <div className="inline-flex items-center border border-line">
           <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-4 py-3 hover:bg-bone" aria-label="Decrease">
             <Minus className="h-4 w-4" />
@@ -170,11 +172,11 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
       {/* Actions */}
       <div className="mt-8 space-y-3">
         <Button onClick={() => handleAdd(false)} full size="lg">
-          Add To Bag
+          {t("common.addToBag")}
         </Button>
         <div className="grid grid-cols-2 gap-3">
           <Button onClick={() => handleAdd(true)} variant="gold" size="lg">
-            Buy Now
+            {t("common.buyNow")}
           </Button>
           <Button
             variant="outline"
@@ -193,7 +195,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
             }}
           >
             <Heart className={cn("h-4 w-4", wished && "fill-sale text-sale")} />
-            {wished ? "Saved" : "Wishlist"}
+            {t("common.wishlist")}
           </Button>
         </div>
       </div>

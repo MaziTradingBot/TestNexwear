@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
+import { useT } from "@/components/providers/I18nProvider";
 import { useCartStore } from "@/store/cart";
 import { useCheckoutStore, type DeliveryMethod, type RateInfo } from "@/store/checkout";
 import { shippingSchema } from "@/lib/validations/checkout";
@@ -21,6 +22,7 @@ type Rates = Partial<Record<DeliveryMethod, RateInfo>>;
 export default function CheckoutPage() {
   const router = useRouter();
   const { data: session } = useSession();
+  const t = useT();
   const [mounted, setMounted] = useState(false);
   const itemCount = useCartStore((s) => s.totalItems());
 
@@ -101,18 +103,17 @@ export default function CheckoutPage() {
       <CheckoutSteps current={0} />
       {!session && (
         <p className="mx-auto mb-8 max-w-xl text-center text-xs text-stone">
-          Checking out as a guest — no account needed.{" "}
+          {t("checkout.guestNote")}{" "}
           <Link href="/login?callbackUrl=/checkout" className="text-ink underline underline-offset-4 hover:text-gold">
             Sign in
-          </Link>{" "}
-          for faster checkout &amp; order tracking.
+          </Link>
         </p>
       )}
       <div className="grid gap-12 lg:grid-cols-[1fr_380px]">
         <form onSubmit={submit} className="space-y-10">
           {/* Shipping info */}
           <section>
-            <h2 className="mb-5 font-serif text-2xl font-light uppercase tracking-wide2">Shipping Information</h2>
+            <h2 className="mb-5 font-serif text-2xl font-light uppercase tracking-wide2">{t("checkout.shippingInfo")}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <Field label="Full Name" error={errors.fullName}>
@@ -152,7 +153,7 @@ export default function CheckoutPage() {
 
           {/* Delivery method */}
           <section>
-            <h2 className="mb-5 font-serif text-2xl font-light uppercase tracking-wide2">Delivery Method</h2>
+            <h2 className="mb-5 font-serif text-2xl font-light uppercase tracking-wide2">{t("checkout.deliveryMethod")}</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               <DeliveryOption
                 icon={<Truck className="h-5 w-5" />}
@@ -204,7 +205,7 @@ export default function CheckoutPage() {
           </section>
 
           <Button type="submit" size="lg" full>
-            Continue To Payment
+            {t("checkout.continueToPayment")}
           </Button>
         </form>
 
