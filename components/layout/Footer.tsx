@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Instagram, Facebook, Twitter, Youtube } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { NewsletterForm } from "@/components/marketing/NewsletterForm";
+import { useT } from "@/components/providers/I18nProvider";
 import { DELIVERY_PARTNERS } from "@/lib/constants";
 
 const COLUMNS = [
@@ -49,18 +50,19 @@ const COLUMNS = [
 const PAYMENTS = ["Visa", "Mastercard", "Apple Pay", "Google Pay", "PayPal"];
 
 export function Footer() {
+  const t = useT();
   return (
     <footer className="mt-24 border-t border-line bg-bone">
       {/* Newsletter */}
       <div className="border-b border-line">
         <div className="container-luxe grid gap-8 py-14 md:grid-cols-2 md:items-center">
           <div>
-            <p className="eyebrow mb-2">Newsletter</p>
+            <p className="eyebrow mb-2">{t("footer.newsletter")}</p>
             <h3 className="font-serif text-2xl font-light md:text-3xl">
-              Join NexWear for early access
+              {t("footer.joinTitle")}
             </h3>
             <p className="mt-2 max-w-md text-sm text-stone">
-              Be first to shop new arrivals, private sales and member-only rewards.
+              {t("footer.joinText")}
             </p>
           </div>
           <NewsletterForm />
@@ -72,8 +74,7 @@ export function Footer() {
         <div className="lg:col-span-2">
           <Logo variant="black" href="/" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-stone">
-            Modern luxury fashion for the considered wardrobe. Designed in-house,
-            shipped worldwide.
+            {t("footer.tagline")}
           </p>
           <div className="mt-5 flex gap-4 text-ink">
             <a href="#" aria-label="Instagram" className="hover:text-gold"><Instagram className="h-5 w-5" /></a>
@@ -84,7 +85,7 @@ export function Footer() {
         </div>
         {COLUMNS.map((col) => (
           <div key={col.title}>
-            <p className="eyebrow mb-4">{col.title}</p>
+            <p className="eyebrow mb-4">{t(`footer.${col.title.toLowerCase()}`)}</p>
             <ul className="space-y-2.5">
               {col.links.map((l) => (
                 <li key={l.label}>
@@ -123,7 +124,7 @@ export function Footer() {
 
       <div className="border-t border-line">
         <div className="container-luxe flex flex-col items-center justify-between gap-2 py-5 text-xs text-mist md:flex-row">
-          <p>© {new Date().getFullYear()} NexWear. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} NexWear. {t("footer.rights")}</p>
           <p>Crafted with care · Worldwide shipping to 16 countries</p>
         </div>
       </div>

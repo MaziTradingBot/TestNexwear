@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Sparkles, Star, ArrowDown } from "lucide-react";
+import { useT } from "@/components/providers/I18nProvider";
 
 const POSTER =
   "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2000&q=80";
@@ -19,6 +20,7 @@ const float = (delay = 0) => ({
  * glassy floating UI cards. Drop your own clip at `public/hero-video.mp4`.
  */
 export function LandingHero() {
+  const t = useT();
   return (
     <section className="relative h-[92vh] min-h-[560px] w-full overflow-hidden bg-ink">
       {/* Background film (silent, decorative) */}
@@ -44,25 +46,24 @@ export function LandingHero() {
         <motion.div {...float(0.05)} className="max-w-2xl text-white">
           <span className="inline-flex items-center gap-2 border border-white/30 bg-white/5 px-3 py-1.5 text-[0.6rem] font-medium uppercase tracking-luxe text-white/90 backdrop-blur sm:text-[0.62rem]">
             <Sparkles className="h-3.5 w-3.5 text-gold" />
-            AI-Curated · New Season
+            {t("hero.eyebrow")}
           </span>
 
           <h1 className="mt-6 font-serif text-5xl font-light uppercase leading-[0.92] tracking-wide2 sm:text-6xl md:text-7xl lg:text-8xl">
-            Modern Luxury
-            <span className="block text-gold-light">In Motion</span>
+            {t("hero.title1")}
+            <span className="block text-gold-light">{t("hero.title2")}</span>
           </h1>
 
           <p className="mt-6 max-w-md text-sm leading-relaxed text-white/85 sm:text-base md:text-lg">
-            An intelligently styled edit of the season&apos;s most-wanted pieces — designed
-            in-house, shipped worldwide.
+            {t("hero.subtitle")}
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/women" className="btn-label">
-              Shop Women
+              {t("hero.shopWomen")}
             </Link>
             <Link href="/men" className="btn-label-outline">
-              Shop Men
+              {t("hero.shopMen")}
             </Link>
           </div>
         </motion.div>
@@ -123,15 +124,15 @@ export function LandingHero() {
         >
           <Sparkles className="h-5 w-5 text-gold" />
           <p className="text-xs leading-tight">
-            <span className="block font-medium">Free worldwide shipping</span>
-            <span className="text-white/60">to 16 countries · over $150</span>
+            <span className="block font-medium">{t("hero.freeShipping")}</span>
+            <span className="text-white/60">{t("hero.toCountries")}</span>
           </p>
         </motion.div>
       </motion.div>
 
       {/* Scroll cue */}
       <div className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 flex-col items-center gap-2 text-white/70 md:flex">
-        <span className="text-[0.6rem] uppercase tracking-luxe">Scroll</span>
+        <span className="text-[0.6rem] uppercase tracking-luxe">{t("hero.scroll")}</span>
         <motion.span
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}

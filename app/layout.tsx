@@ -1,9 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Cormorant_Garamond } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { SITE } from "@/lib/constants";
 import { Providers } from "@/components/providers/Providers";
 import { StoreChrome } from "@/components/layout/StoreChrome";
+import { LOCALES, type Locale } from "@/lib/i18n/messages";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,10 +46,13 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const cookieLocale = cookies().get("locale")?.value;
+  const locale = (LOCALES.includes(cookieLocale as Locale) ? cookieLocale : "en") as Locale;
+
   return (
-    <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
+    <html lang={locale} className={`${inter.variable} ${cormorant.variable}`}>
       <body className="flex min-h-screen flex-col">
-        <Providers>
+        <Providers locale={locale}>
           <StoreChrome>{children}</StoreChrome>
         </Providers>
       </body>

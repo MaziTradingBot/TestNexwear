@@ -8,6 +8,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Sheet } from "@/components/ui/sheet";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { useT } from "@/components/providers/I18nProvider";
 import { MAIN_NAV, MEGA_MENU } from "@/lib/constants";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
@@ -28,6 +29,8 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const { data: session } = useSession();
+  const t = useT();
+  const navLabel = (label: string) => t(`nav.${label.toLowerCase()}`);
 
   const cartCount = useCartStore((s) => s.totalItems());
   const wishCount = useWishlistStore((s) => s.count());
@@ -62,7 +65,7 @@ export function Header() {
                       item.accent ? "text-sale" : "text-ink hover:text-gold",
                     )}
                   >
-                    {item.label}
+                    {navLabel(item.label)}
                   </Link>
                 ))}
               </nav>
@@ -141,7 +144,7 @@ export function Header() {
                 item.accent && "text-sale",
               )}
             >
-              {item.label}
+              {navLabel(item.label)}
               <ChevronRight className="h-4 w-4 text-mist" />
             </Link>
           ))}

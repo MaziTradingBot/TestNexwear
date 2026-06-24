@@ -1,15 +1,12 @@
 "use client";
 
-const MESSAGES = [
-  "Summer Sale — Up To 50% Off",
-  "Free Express Shipping On Orders Over $150",
-  "New Season Arrivals Now Live",
-  "Members Earn Loyalty Points On Every Order",
-];
+import { useT } from "@/components/providers/I18nProvider";
 
 export function AnnouncementBar() {
-  // Duplicate the list so the -50% marquee translate loops seamlessly.
-  const items = [...MESSAGES, ...MESSAGES];
+  const t = useT();
+  const base = [t("announce.sale"), t("announce.shipping"), t("announce.new"), t("announce.loyalty")];
+  // Duplicate the list so the marquee translate loops seamlessly.
+  const items = [...base, ...base];
   return (
     <div className="marquee-paused overflow-hidden bg-ink py-2.5 text-white">
       <div className="marquee-track flex w-max whitespace-nowrap">

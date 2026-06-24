@@ -3,16 +3,15 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { LANGUAGES } from "@/lib/constants";
+import { useI18n } from "@/components/providers/I18nProvider";
+import type { Locale } from "@/lib/i18n/messages";
 import { cn } from "@/lib/cn";
 
-/**
- * Language switcher. Phase 1 ships the UI + English active; the i18n dictionary
- * layer (8 locales) is wired in a later phase.
- */
+/** Language switcher — changes the active locale for the whole storefront UI. */
 export function LanguageSwitcher({ className }: { className?: string }) {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState("en");
-  const current = LANGUAGES.find((l) => l.code === active) ?? LANGUAGES[0];
+  const { locale, setLocale } = useI18n();
+  const current = LANGUAGES.find((l) => l.code === locale) ?? LANGUAGES[0];
 
   return (
     <div className={cn("relative", className)} onMouseLeave={() => setOpen(false)}>
@@ -35,15 +34,15 @@ export function LanguageSwitcher({ className }: { className?: string }) {
             <li key={l.code}>
               <button
                 onClick={() => {
-                  setActive(l.code);
                   setOpen(false);
+                  if (l.code !== locale) setLocale(l.code as Locale);
                 }}
                 className={cn(
                   "flex w-full items-center justify-between px-4 py-2 text-left text-xs hover:bg-bone",
-                  l.code === active && "text-gold",
+                  l.code === locale && "text-gold",
                 )}
                 role="option"
-                aria-selected={l.code === active}
+                aria-selected={l.code === locale}
               >
                 {l.label}
                 <span className="text-mist">{l.code.toUpperCase()}</span>
