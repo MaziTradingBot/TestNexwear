@@ -20,9 +20,10 @@ const config: Config = {
         graphite: "#3A3A3A",
         stone: "#6B6B6B", // muted text
         mist: "#9A9A9A",
-        bone: "#F6F4F1", // warm off-white surface
-        sand: "#EDE9E3", // soft beige panels
-        line: "#E4E0D9", // hairline borders
+        cream: "#F6F1E8", // warm ivory — page background
+        bone: "#EFEAE0", // warm off-white surface / panels
+        sand: "#E7E0D4", // soft beige panels
+        line: "#E2DCD0", // hairline borders
         gold: {
           DEFAULT: "#B8995A", // luxury gold accent
           light: "#C9A86A",

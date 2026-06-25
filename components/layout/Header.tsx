@@ -39,7 +39,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-line bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      <header className="sticky top-0 z-50 border-b border-line bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/80">
         <div
           className="container-luxe"
           onMouseLeave={() => setHovered(null)}
@@ -103,7 +103,7 @@ export function Header() {
           {/* Mega menu */}
           {hovered && MEGA_MENU[hovered] && (
             <div
-              className="absolute inset-x-0 top-full hidden border-b border-line bg-white shadow-sm lg:block"
+              className="absolute inset-x-0 top-full hidden border-b border-line bg-cream shadow-sm lg:block"
               onMouseEnter={() => setHovered(hovered)}
             >
               <div className="container-luxe grid grid-cols-4 gap-10 py-8">
