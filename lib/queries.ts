@@ -1,5 +1,9 @@
 import { Prisma } from "@prisma/client";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+
+// Cache window (seconds) for stable catalog data shown on home/listing rails.
+const CATALOG_TTL = 120;
 
 /* ---------- Serializable shapes for client components ---------- */
 
@@ -192,19 +196,39 @@ async function findCards(where: Prisma.ProductWhereInput, orderBy: Prisma.Produc
 }
 
 export const getNewArrivals = (take = 8) =>
-  findCards({ isActive: true, isNewArrival: true }, { createdAt: "desc" }, take);
+  unstable_cache(
+    () => findCards({ isActive: true, isNewArrival: true }, { createdAt: "desc" }, take),
+    ["new-arrivals", String(take)],
+    { revalidate: CATALOG_TTL, tags: ["catalog"] },
+  )();
 
 export const getTrending = (take = 8) =>
-  findCards({ isActive: true }, { popularity: "desc" }, take);
+  unstable_cache(
+    () => findCards({ isActive: true }, { popularity: "desc" }, take),
+    ["trending", String(take)],
+    { revalidate: CATALOG_TTL, tags: ["catalog"] },
+  )();
 
 export const getBestSellers = (take = 4) =>
-  findCards({ isActive: true, reviewCount: { gt: 50 } }, { reviewCount: "desc" }, take);
+  unstable_cache(
+    () => findCards({ isActive: true, reviewCount: { gt: 50 } }, { reviewCount: "desc" }, take),
+    ["best-sellers", String(take)],
+    { revalidate: CATALOG_TTL, tags: ["catalog"] },
+  )();
 
 export const getSaleProducts = (take = 8) =>
-  findCards({ isActive: true, discountPrice: { not: null } }, { popularity: "desc" }, take);
+  unstable_cache(
+    () => findCards({ isActive: true, discountPrice: { not: null } }, { popularity: "desc" }, take),
+    ["sale-products", String(take)],
+    { revalidate: CATALOG_TTL, tags: ["catalog"] },
+  )();
 
 export const getFeatured = (take = 4) =>
-  findCards({ isActive: true, isFeatured: true }, { popularity: "desc" }, take);
+  unstable_cache(
+    () => findCards({ isActive: true, isFeatured: true }, { popularity: "desc" }, take),
+    ["featured", String(take)],
+    { revalidate: CATALOG_TTL, tags: ["catalog"] },
+  )();
 
 export async function getSimilarProducts(productId: string, department: string, take = 4) {
   return findCards(
@@ -216,21 +240,25 @@ export async function getSimilarProducts(productId: string, department: string, 
 
 /* ---------- Brands & categories ---------- */
 
-export async function getBrands() {
-  const brands = await prisma.brand.findMany({
-    orderBy: { name: "asc" },
-    include: { _count: { select: { products: true } } },
-  });
-  return brands.map((b) => ({
-    id: b.id,
-    name: b.name,
-    slug: b.slug,
-    isPremium: b.isPremium,
-    heroImage: b.heroImage,
-    description: b.description,
-    productCount: b._count.products,
-  }));
-}
+export const getBrands = unstable_cache(
+  async () => {
+    const brands = await prisma.brand.findMany({
+      orderBy: { name: "asc" },
+      include: { _count: { select: { products: true } } },
+    });
+    return brands.map((b) => ({
+      id: b.id,
+      name: b.name,
+      slug: b.slug,
+      isPremium: b.isPremium,
+      heroImage: b.heroImage,
+      description: b.description,
+      productCount: b._count.products,
+    }));
+  },
+  ["brands-all"],
+  { revalidate: CATALOG_TTL, tags: ["catalog"] },
+);
 
 export async function getBrandBySlug(slug: string) {
   return prisma.brand.findUnique({ where: { slug } });
@@ -243,10 +271,13 @@ export async function getCategoriesByDepartment(department: string) {
   });
 }
 
-export async function getBanners() {
-  const banners = await prisma.banner.findMany({
-    where: { isActive: true },
-    orderBy: { position: "asc" },
-  });
-  return banners;
-}
+export const getBanners = unstable_cache(
+  async () => {
+    return prisma.banner.findMany({
+      where: { isActive: true },
+      orderBy: { position: "asc" },
+    });
+  },
+  ["banners-active"],
+  { revalidate: CATALOG_TTL, tags: ["catalog"] },
+);

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { guardAdminApi } from "@/lib/admin";
@@ -82,6 +83,7 @@ export async function POST(req: Request) {
         },
       },
     });
+    revalidateTag("catalog");
     return NextResponse.json({ id: product.id });
   } catch (e) {
     console.error("POST /api/admin/products", e);

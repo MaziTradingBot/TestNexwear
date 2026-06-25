@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { guardAdminApi } from "@/lib/admin";
@@ -31,6 +32,7 @@ export async function POST(req: Request) {
         isPremium: d.isPremium ?? false,
       },
     });
+    revalidateTag("catalog");
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("POST /api/admin/brands", e);

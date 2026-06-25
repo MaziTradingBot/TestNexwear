@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { guardAdminApi } from "@/lib/admin";
@@ -57,6 +58,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
         },
       });
     });
+    revalidateTag("catalog");
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("PATCH /api/admin/products/[id]", e);
@@ -69,6 +71,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   if (denied) return denied;
   try {
     await prisma.product.delete({ where: { id: params.id } });
+    revalidateTag("catalog");
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("DELETE /api/admin/products/[id]", e);
