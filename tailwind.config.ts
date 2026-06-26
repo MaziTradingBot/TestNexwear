@@ -20,14 +20,14 @@ const config: Config = {
         graphite: "#3A3A3A",
         stone: "#6B6B6B", // muted text
         mist: "#9A9A9A",
-        cream: "#F6F1E8", // warm ivory — page background
-        bone: "#EFEAE0", // warm off-white surface / panels
-        sand: "#E7E0D4", // soft beige panels
-        line: "#E2DCD0", // hairline borders
+        cream: "#F3ECDD", // deeper warm cream — page background
+        bone: "#ECE3D2", // warm beige surface / panels
+        sand: "#E4DAC6", // soft beige panels
+        line: "#DDD3C0", // warm hairline borders
         gold: {
-          DEFAULT: "#B8995A", // luxury gold accent
-          light: "#C9A86A",
-          dark: "#9A7F45",
+          DEFAULT: "#B07A3E", // warm bronze accent
+          light: "#CC9856",
+          dark: "#8C5F2A",
         },
         sale: "#9B2C2C", // deep wine for sale tags
       },
