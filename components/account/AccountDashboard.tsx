@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { Package, User, MapPin, Lock, Heart, Award, LogOut, LayoutDashboard } from "lucide-react";
+import { Package, User, MapPin, Lock, Heart, Award, LogOut, LayoutDashboard, ArrowLeft, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +62,12 @@ export function AccountDashboard({
 
   return (
     <div className="container-luxe py-12">
+      <Link
+        href="/"
+        className="mb-6 inline-flex items-center gap-1.5 text-xs uppercase tracking-wide2 text-stone transition-colors hover:text-ink"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to Home
+      </Link>
       <div className="mb-10 flex flex-col items-start justify-between gap-4 border-b border-line pb-8 sm:flex-row sm:items-end">
         <div>
           <p className="eyebrow mb-2">My Account</p>
@@ -93,6 +99,9 @@ export function AccountDashboard({
             ))}
             <Link href="/wishlist" className="flex items-center gap-3 px-4 py-3 text-sm text-stone hover:bg-bone hover:text-ink">
               <Heart className="h-4 w-4" /> Wishlist
+            </Link>
+            <Link href="/" className="flex items-center gap-3 px-4 py-3 text-sm text-stone hover:bg-bone hover:text-ink">
+              <ShoppingBag className="h-4 w-4" /> Continue Shopping
             </Link>
             {isAdmin && (
               <Link href="/admin" className="flex items-center gap-3 px-4 py-3 text-sm text-gold hover:bg-bone">

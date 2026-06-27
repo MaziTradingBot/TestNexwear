@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
 import { AuthShell, AuthLink } from "@/components/auth/AuthShell";
+import { GoogleButton } from "@/components/auth/GoogleButton";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function RegisterPage() {
       subtitle="Join NexWear for early access & rewards"
       footer={<>Already have an account? <AuthLink href="/login">Sign in</AuthLink></>}
     >
+      <GoogleButton callbackUrl="/account" />
       <form onSubmit={submit} className="space-y-5">
         <Field label="Full Name">
           <Input required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
