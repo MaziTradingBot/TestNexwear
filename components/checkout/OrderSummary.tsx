@@ -3,13 +3,14 @@
 import Image from "next/image";
 import { useCartStore } from "@/store/cart";
 import { useCouponStore } from "@/store/coupon";
-import { formatPrice } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 
 export function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
   const items = useCartStore((s) => s.items).filter((i) => !i.savedForLater);
   const subtotal = useCartStore((s) => s.subtotal());
   const discount = useCouponStore((s) => s.discountFor(subtotal));
   const coupon = useCouponStore((s) => s.coupon);
+  const { format: formatPrice } = useMoney();
   const total = Math.max(0, subtotal - discount) + shippingCost;
 
   return (

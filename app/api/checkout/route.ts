@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validations/checkout";
+import { sendMail, orderConfirmationEmail } from "@/lib/mailer";
 import { PaymentStatus, ShippingMethod, DeliveryProvider, PaymentMethod } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -155,6 +156,21 @@ export async function POST(req: Request) {
 
       return created;
     });
+
+    // Send order confirmation (non-blocking — never fail the order on email issues)
+    sendMail({
+      to: shipping.email,
+      ...orderConfirmationEmail({
+        orderNumber: order.orderNumber,
+        customerName: shipping.fullName,
+        total: Number(order.total),
+        trackingNumber: order.trackingNumber,
+        estimatedDelivery: order.estimatedDelivery,
+        items: orderItems.map((i) => ({
+          title: i.title, quantity: i.quantity, unitPrice: i.unitPrice, size: i.size, color: i.color,
+        })),
+      }),
+    }).catch((e) => console.error("[checkout] confirmation email failed", e));
 
     return NextResponse.json({
       order: {

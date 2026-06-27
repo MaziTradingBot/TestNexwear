@@ -6,6 +6,7 @@ import { SITE } from "@/lib/constants";
 import { Providers } from "@/components/providers/Providers";
 import { StoreChrome } from "@/components/layout/StoreChrome";
 import { LOCALES, type Locale } from "@/lib/i18n/messages";
+import { CURRENCIES, type CurrencyCode } from "@/lib/currency";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -46,13 +47,16 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const cookieLocale = cookies().get("locale")?.value;
+  const jar = cookies();
+  const cookieLocale = jar.get("locale")?.value;
   const locale = (LOCALES.includes(cookieLocale as Locale) ? cookieLocale : "en") as Locale;
+  const cookieCurrency = jar.get("currency")?.value;
+  const currency = (CURRENCIES.some((c) => c.code === cookieCurrency) ? cookieCurrency : "USD") as CurrencyCode;
 
   return (
     <html lang={locale} className={`${inter.variable} ${cormorant.variable}`}>
       <body className="flex min-h-screen flex-col">
-        <Providers locale={locale}>
+        <Providers locale={locale} currency={currency}>
           <StoreChrome>{children}</StoreChrome>
         </Providers>
       </body>

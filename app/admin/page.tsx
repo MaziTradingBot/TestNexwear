@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, ShoppingCart, DollarSign, Users, Tag, Clock } from "lucide-react";
+import { Package, ShoppingCart, DollarSign, Users, Tag, Clock, AlertTriangle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatPrice, formatDate } from "@/lib/format";
 import { AdminHeader, AdminCard } from "@/components/admin/AdminShell";
@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const [productCount, orderCount, customerCount, brandCount, paidAgg, recentOrders] =
+  const [productCount, orderCount, customerCount, brandCount, paidAgg, recentOrders, stockRows] =
     await Promise.all([
       prisma.product.count(),
       prisma.order.count(),
@@ -23,9 +23,11 @@ export default async function AdminDashboard() {
         take: 6,
         include: { _count: { select: { items: true } } },
       }),
+      prisma.product.findMany({ where: { isActive: true }, select: { variants: { select: { stock: true } } } }),
     ]);
 
   const revenue = Number(paidAgg._sum.total ?? 0);
+  const lowStock = stockRows.filter((p) => p.variants.reduce((s, v) => s + v.stock, 0) <= 5).length;
 
   const cards = [
     { label: "Revenue", value: formatPrice(revenue), icon: DollarSign },
@@ -33,13 +35,14 @@ export default async function AdminDashboard() {
     { label: "Products", value: productCount.toString(), icon: Package },
     { label: "Customers", value: customerCount.toString(), icon: Users },
     { label: "Brands", value: brandCount.toString(), icon: Tag },
+    { label: "Low Stock", value: lowStock.toString(), icon: AlertTriangle },
   ];
 
   return (
     <div className="p-6 lg:p-10">
       <AdminHeader title="Dashboard" description="Overview of your store performance." />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
         {cards.map((c) => (
           <AdminCard key={c.label} className="p-5">
             <div className="flex items-center justify-between">

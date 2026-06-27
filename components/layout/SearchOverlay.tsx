@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Search, X } from "lucide-react";
-import { formatPrice } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 import type { ProductCard } from "@/lib/queries";
 
 const POPULAR = ["Linen Shirt", "Midi Dress", "Sneakers", "Blazer", "Tote Bag", "Chelsea Boot"];
@@ -20,6 +20,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const [history, setHistory] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { format: formatPrice } = useMoney();
 
   useEffect(() => {
     if (open) {

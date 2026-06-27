@@ -10,7 +10,7 @@ import { useCartStore, type CartLine } from "@/store/cart";
 import { useCouponStore } from "@/store/coupon";
 import { useToast } from "@/components/ui/toast";
 import { useT } from "@/components/providers/I18nProvider";
-import { formatPrice } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 import { cn } from "@/lib/cn";
 
 const FREE_SHIP_THRESHOLD = 150;
@@ -28,6 +28,7 @@ export default function CartPage() {
   const { coupon, apply, clear, discountFor } = useCouponStore();
   const show = useToast((s) => s.show);
   const t = useT();
+  const { format: formatPrice } = useMoney();
 
   const [code, setCode] = useState("");
   const [couponError, setCouponError] = useState("");
@@ -224,6 +225,7 @@ function CartRow({
   onMove?: () => void;
   saved?: boolean;
 }) {
+  const { format: formatPrice } = useMoney();
   return (
     <li className="flex gap-4 py-6">
       <Link href={`/product/${item.slug}`} className="relative aspect-[3/4] w-24 shrink-0 overflow-hidden bg-bone">

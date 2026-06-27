@@ -6,7 +6,8 @@ import { motion } from "framer-motion";
 import { Check, Package, Truck, CalendarClock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCheckoutStore } from "@/store/checkout";
-import { formatPrice, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 
 const PAYMENT_LABELS: Record<string, string> = {
   CARD: "Card Payment",
@@ -19,6 +20,7 @@ const PAYMENT_LABELS: Record<string, string> = {
 export default function SuccessPage() {
   const [mounted, setMounted] = useState(false);
   const order = useCheckoutStore((s) => s.lastOrder);
+  const { format: formatPrice } = useMoney();
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return <div className="container-luxe py-24" />;

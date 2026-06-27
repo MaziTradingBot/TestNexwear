@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useWishlistStore } from "@/store/wishlist";
 import { useCartStore } from "@/store/cart";
 import { useToast } from "@/components/ui/toast";
-import { formatPrice } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 
 export default function WishlistPage() {
   const [mounted, setMounted] = useState(false);
@@ -16,6 +16,7 @@ export default function WishlistPage() {
   const remove = useWishlistStore((s) => s.remove);
   const addItem = useCartStore((s) => s.addItem);
   const show = useToast((s) => s.show);
+  const { format: formatPrice } = useMoney();
 
   useEffect(() => setMounted(true), []);
   if (!mounted) return <div className="container-luxe py-24" />;

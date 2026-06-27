@@ -8,6 +8,7 @@ import { Logo } from "@/components/brand/Logo";
 import { Sheet } from "@/components/ui/sheet";
 import { SearchOverlay } from "@/components/layout/SearchOverlay";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { CurrencySwitcher } from "@/components/layout/CurrencySwitcher";
 import { useT } from "@/components/providers/I18nProvider";
 import { MAIN_NAV, MEGA_MENU } from "@/lib/constants";
 import { useCartStore } from "@/store/cart";
@@ -78,6 +79,7 @@ export function Header() {
 
             {/* Right — utilities */}
             <div className="flex items-center justify-end gap-4 sm:gap-5">
+              <CurrencySwitcher className="hidden md:block" />
               <LanguageSwitcher className="hidden sm:block" />
               <button onClick={() => setSearchOpen(true)} aria-label="Search" className="hover:text-gold">
                 <Search className="h-5 w-5" />

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import type { ProductCard as ProductCardData } from "@/lib/queries";
-import { formatPrice, discountPercent } from "@/lib/format";
+import { discountPercent } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 import { useWishlistStore } from "@/store/wishlist";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
@@ -20,6 +21,7 @@ export function ProductCard({
   const wished = useWishlistStore((s) => s.items.some((i) => i.productId === product.id));
   const toggle = useWishlistStore((s) => s.toggle);
   const show = useToast((s) => s.show);
+  const { format } = useMoney();
 
   const onSale = product.discountPrice != null;
   const effective = product.discountPrice ?? product.price;
@@ -72,14 +74,23 @@ export function ProductCard({
             />
           )}
 
+          {/* Sold out overlay */}
+          {product.outOfStock && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-cream/55">
+              <span className="bg-ink px-4 py-1.5 text-[0.62rem] font-medium uppercase tracking-luxe text-white">
+                Sold Out
+              </span>
+            </div>
+          )}
+
           {/* Badges */}
           <div className="absolute left-3 top-3 flex flex-col gap-1.5">
-            {onSale && (
+            {product.outOfStock ? null : onSale && (
               <span className="bg-sale px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-wide2 text-white">
                 -{pct}%
               </span>
             )}
-            {product.isNewArrival && !onSale && (
+            {!product.outOfStock && product.isNewArrival && !onSale && (
               <span className="bg-white px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-wide2 text-ink">
                 New
               </span>
@@ -109,10 +120,10 @@ export function ProductCard({
         </Link>
         <div className="flex items-baseline gap-2">
           <span className={cn("text-sm", onSale ? "text-sale" : "text-ink")}>
-            {formatPrice(effective)}
+            {format(effective)}
           </span>
           {onSale && (
-            <span className="text-xs text-mist line-through">{formatPrice(product.price)}</span>
+            <span className="text-xs text-mist line-through">{format(product.price)}</span>
           )}
         </div>
         {product.colors.length > 1 && (

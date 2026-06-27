@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard, Package, Tag, FolderTree, ShoppingCart,
-  Ticket, Users, ExternalLink, LogOut,
+  Ticket, Users, Star, Mail, ExternalLink, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -15,7 +15,9 @@ const LINKS = [
   { href: "/admin/brands", label: "Brands", icon: Tag },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/coupons", label: "Coupons", icon: Ticket },
+  { href: "/admin/newsletter", label: "Newsletter", icon: Mail },
   { href: "/admin/users", label: "Users", icon: Users },
 ];
 

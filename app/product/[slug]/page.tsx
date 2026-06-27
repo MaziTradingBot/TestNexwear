@@ -42,7 +42,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
   if (!product) notFound();
 
   const [similar, reviewRows] = await Promise.all([
-    getSimilarProducts(product.id, product.department, 8),
+    getSimilarProducts(product.id, 8),
     prisma.review.findMany({
       where: { productId: product.id, isApproved: true },
       orderBy: { createdAt: "desc" },

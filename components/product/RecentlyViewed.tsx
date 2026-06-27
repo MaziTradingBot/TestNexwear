@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRecentlyViewedStore } from "@/store/recently-viewed";
-import { formatPrice } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 
 export function RecentlyViewed({ excludeId }: { excludeId?: string }) {
   const [mounted, setMounted] = useState(false);
   const items = useRecentlyViewedStore((s) => s.items);
+  const { format: formatPrice } = useMoney();
   useEffect(() => setMounted(true), []);
 
   const list = items.filter((i) => i.productId !== excludeId).slice(0, 6);

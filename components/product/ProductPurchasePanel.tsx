@@ -10,7 +10,8 @@ import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
 import { useToast } from "@/components/ui/toast";
 import { useT } from "@/components/providers/I18nProvider";
-import { formatPrice, discountPercent } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
+import { discountPercent } from "@/lib/format";
 import type { ProductDetail } from "@/lib/queries";
 import { cn } from "@/lib/cn";
 
@@ -21,6 +22,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
   const wished = useWishlistStore((s) => s.items.some((i) => i.productId === product.id));
   const show = useToast((s) => s.show);
   const t = useT();
+  const { format } = useMoney();
 
   const colors = useMemo(() => {
     const map = new Map<string, string | null>();
@@ -79,11 +81,11 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
 
       <div className="mt-5 flex items-baseline gap-3">
         <span className={cn("text-2xl", onSale ? "text-sale" : "text-ink")}>
-          {formatPrice(effective)}
+          {format(effective)}
         </span>
         {onSale && (
           <>
-            <span className="text-base text-mist line-through">{formatPrice(product.price)}</span>
+            <span className="text-base text-mist line-through">{format(product.price)}</span>
             <span className="bg-sale px-2 py-0.5 text-[0.6rem] font-medium uppercase tracking-wide2 text-white">
               -{discountPercent(product.price, product.discountPrice!)}%
             </span>

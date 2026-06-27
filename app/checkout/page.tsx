@@ -14,7 +14,7 @@ import { useCartStore } from "@/store/cart";
 import { useCheckoutStore, type DeliveryMethod, type RateInfo } from "@/store/checkout";
 import { shippingSchema } from "@/lib/validations/checkout";
 import { COUNTRIES, DELIVERY_PARTNERS } from "@/lib/constants";
-import { formatPrice } from "@/lib/format";
+import { useMoney } from "@/components/providers/CurrencyProvider";
 import { cn } from "@/lib/cn";
 
 type Rates = Partial<Record<DeliveryMethod, RateInfo>>;
@@ -227,6 +227,7 @@ function DeliveryOption({
   selected: boolean;
   onClick: () => void;
 }) {
+  const { format: formatPrice } = useMoney();
   return (
     <button
       type="button"

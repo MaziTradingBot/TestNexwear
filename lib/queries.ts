@@ -20,6 +20,7 @@ export type ProductCard = {
   rating: number;
   reviewCount: number;
   isNewArrival: boolean;
+  outOfStock: boolean;
   colors: { name: string; hex: string | null }[];
 };
 
@@ -53,7 +54,7 @@ const cardSelect = {
   isNewArrival: true,
   brand: { select: { name: true } },
   images: { orderBy: { position: "asc" }, select: { url: true } },
-  variants: { select: { color: true, colorHex: true } },
+  variants: { select: { color: true, colorHex: true, stock: true } },
 } satisfies Prisma.ProductSelect;
 
 type RawCard = Prisma.ProductGetPayload<{ select: typeof cardSelect }>;
@@ -61,6 +62,7 @@ type RawCard = Prisma.ProductGetPayload<{ select: typeof cardSelect }>;
 function toCard(p: RawCard): ProductCard {
   const colorMap = new Map<string, string | null>();
   for (const v of p.variants) if (!colorMap.has(v.color)) colorMap.set(v.color, v.colorHex);
+  const totalStock = p.variants.reduce((s, v) => s + v.stock, 0);
   return {
     id: p.id,
     slug: p.slug,
@@ -74,6 +76,7 @@ function toCard(p: RawCard): ProductCard {
     rating: Number(p.rating),
     reviewCount: p.reviewCount,
     isNewArrival: p.isNewArrival,
+    outOfStock: totalStock === 0,
     colors: Array.from(colorMap, ([name, hex]) => ({ name, hex })),
   };
 }
@@ -230,12 +233,39 @@ export const getFeatured = (take = 4) =>
     { revalidate: CATALOG_TTL, tags: ["catalog"] },
   )();
 
-export async function getSimilarProducts(productId: string, department: string, take = 4) {
-  return findCards(
-    { isActive: true, department, id: { not: productId } },
-    { popularity: "desc" },
-    take,
-  );
+/**
+ * Smarter "you may also like" — scores candidates by shared category, shared
+ * brand, price proximity and popularity instead of just same-department order.
+ */
+export async function getSimilarProducts(productId: string, take = 8) {
+  const base = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { categoryId: true, brandId: true, department: true, price: true },
+  });
+  if (!base) return [];
+  const basePrice = Number(base.price);
+
+  const pool = await prisma.product.findMany({
+    where: {
+      isActive: true,
+      id: { not: productId },
+      OR: [{ categoryId: base.categoryId }, { brandId: base.brandId }, { department: base.department }],
+    },
+    select: { ...cardSelect, categoryId: true, brandId: true, popularity: true },
+    take: 60,
+  });
+
+  const scored = pool.map((p) => {
+    let score = 0;
+    if (p.categoryId === base.categoryId) score += 5;
+    if (p.brandId === base.brandId) score += 3;
+    const priceDiff = Math.abs(Number(p.price) - basePrice) / Math.max(basePrice, 1);
+    score += Math.max(0, 2 - priceDiff * 2); // closer price → up to +2
+    score += (p.popularity / 1000) * 0.5; // small popularity nudge
+    return { p, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, take).map(({ p }) => toCard(p));
 }
 
 /* ---------- Brands & categories ---------- */

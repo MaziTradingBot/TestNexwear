@@ -18,7 +18,14 @@ export type AdminProduct = {
   discountPrice: number | null;
   isActive: boolean;
   variants: number;
+  stock: number;
 };
+
+function StockCell({ stock }: { stock: number }) {
+  if (stock <= 0) return <Badge variant="sale">Out</Badge>;
+  if (stock <= 5) return <span className="text-sale">{stock} · Low</span>;
+  return <span className="text-stone">{stock}</span>;
+}
 
 export function ProductsTable({ products }: { products: AdminProduct[] }) {
   const router = useRouter();
@@ -51,6 +58,7 @@ export function ProductsTable({ products }: { products: AdminProduct[] }) {
           <th className="px-5 py-3">Category</th>
           <th className="px-5 py-3">Price</th>
           <th className="px-5 py-3">Variants</th>
+          <th className="px-5 py-3">Stock</th>
           <th className="px-5 py-3">Status</th>
           <th className="px-5 py-3 text-right">Actions</th>
         </tr>
@@ -72,6 +80,7 @@ export function ProductsTable({ products }: { products: AdminProduct[] }) {
               )}
             </td>
             <td className="px-5 py-3 text-stone">{p.variants}</td>
+            <td className="px-5 py-3"><StockCell stock={p.stock} /></td>
             <td className="px-5 py-3">
               <Badge variant={p.isActive ? "gold" : "default"}>{p.isActive ? "Active" : "Hidden"}</Badge>
             </td>

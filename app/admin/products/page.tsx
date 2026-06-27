@@ -14,7 +14,7 @@ export default async function AdminProductsPage() {
     include: {
       brand: { select: { name: true } },
       category: { select: { name: true } },
-      _count: { select: { variants: true } },
+      variants: { select: { stock: true } },
     },
   });
 
@@ -27,7 +27,8 @@ export default async function AdminProductsPage() {
     price: Number(p.price),
     discountPrice: p.discountPrice ? Number(p.discountPrice) : null,
     isActive: p.isActive,
-    variants: p._count.variants,
+    variants: p.variants.length,
+    stock: p.variants.reduce((s, v) => s + v.stock, 0),
   }));
 
   return (
