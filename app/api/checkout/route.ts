@@ -4,6 +4,8 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { checkoutSchema } from "@/lib/validations/checkout";
 import { sendMail, orderConfirmationEmail } from "@/lib/mailer";
+import { stripe, stripeEnabled } from "@/lib/stripe";
+import { SITE } from "@/lib/constants";
 import { PaymentStatus, ShippingMethod, DeliveryProvider, PaymentMethod } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -95,8 +97,13 @@ export async function POST(req: Request) {
   const trackingNumber = genTracking(deliveryProvider);
   const estimatedDelivery = new Date(Date.now() + etaMax * 86_400_000);
 
-  const paymentStatus =
-    paymentMethod === "CASH_ON_DELIVERY" ? PaymentStatus.COD_PENDING : PaymentStatus.SIMULATED;
+  // Use real Stripe Checkout for card payments when configured; otherwise simulate.
+  const useStripe = paymentMethod === "CARD" && stripeEnabled;
+  const paymentStatus = useStripe
+    ? PaymentStatus.PENDING
+    : paymentMethod === "CASH_ON_DELIVERY"
+      ? PaymentStatus.COD_PENDING
+      : PaymentStatus.SIMULATED;
 
   // 4. Persist order + items + payment, decrement stock
   try {
@@ -106,6 +113,7 @@ export async function POST(req: Request) {
           orderNumber,
           userId: session?.user?.id ?? null,
           status: paymentStatus === PaymentStatus.SIMULATED ? "PAID" : "PENDING",
+          // Stripe orders start PENDING and flip to PAID via webhook.
           paymentMethod: paymentMethod as PaymentMethod,
           paymentStatus,
           deliveryMethod: deliveryMethod as ShippingMethod,
@@ -129,7 +137,7 @@ export async function POST(req: Request) {
           payment: {
             create: {
               provider: paymentMethod as PaymentMethod,
-              providerRefId: `SIM-${Date.now().toString(36).toUpperCase()}`,
+              providerRefId: useStripe ? null : `SIM-${Date.now().toString(36).toUpperCase()}`,
               amount: total,
               status: paymentStatus,
             },
@@ -146,8 +154,9 @@ export async function POST(req: Request) {
         }
       }
 
-      // Award loyalty points (1 per $1) to logged-in users
-      if (session?.user?.id) {
+      // Award loyalty points (1 per $1) once paid. Stripe orders earn points
+      // in the webhook after payment succeeds.
+      if (session?.user?.id && !useStripe) {
         await tx.user.update({
           where: { id: session.user.id },
           data: { loyaltyPoints: { increment: Math.floor(total) } },
@@ -156,6 +165,60 @@ export async function POST(req: Request) {
 
       return created;
     });
+
+    const orderResponse = {
+      orderNumber: order.orderNumber,
+      trackingNumber: order.trackingNumber,
+      deliveryMethod: order.deliveryMethod,
+      deliveryProvider: order.deliveryProvider,
+      estimatedDelivery: order.estimatedDelivery?.toISOString(),
+      total: Number(order.total),
+      email: order.customerEmail,
+      paymentMethod: order.paymentMethod,
+    };
+
+    // Real card payment → create a Stripe Checkout Session and redirect.
+    if (useStripe && stripe) {
+      const lineItems: import("stripe").Stripe.Checkout.SessionCreateParams.LineItem[] = orderItems.map((i) => ({
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: `${i.title}${i.size ? ` · ${i.size}` : ""}${i.color ? ` · ${i.color}` : ""}`,
+          },
+          unit_amount: Math.round(i.unitPrice * 100),
+        },
+        quantity: i.quantity,
+      }));
+      if (shippingCost > 0) {
+        lineItems.push({
+          price_data: { currency: "usd", product_data: { name: `Shipping (${deliveryMethod})` }, unit_amount: Math.round(shippingCost * 100) },
+          quantity: 1,
+        });
+      }
+
+      let discounts: import("stripe").Stripe.Checkout.SessionCreateParams.Discount[] | undefined;
+      if (discount > 0) {
+        const coupon = await stripe.coupons.create({
+          amount_off: Math.round(discount * 100),
+          currency: "usd",
+          duration: "once",
+          name: appliedCode ?? "Discount",
+        });
+        discounts = [{ coupon: coupon.id }];
+      }
+
+      const checkout = await stripe.checkout.sessions.create({
+        mode: "payment",
+        customer_email: shipping.email,
+        line_items: lineItems,
+        discounts,
+        metadata: { orderNumber: order.orderNumber, orderId: order.id },
+        success_url: `${SITE.url}/checkout/success?order=${order.orderNumber}`,
+        cancel_url: `${SITE.url}/checkout/payment`,
+      });
+
+      return NextResponse.json({ order: orderResponse, redirectUrl: checkout.url });
+    }
 
     // Send order confirmation (non-blocking — never fail the order on email issues)
     sendMail({
@@ -172,18 +235,7 @@ export async function POST(req: Request) {
       }),
     }).catch((e) => console.error("[checkout] confirmation email failed", e));
 
-    return NextResponse.json({
-      order: {
-        orderNumber: order.orderNumber,
-        trackingNumber: order.trackingNumber,
-        deliveryMethod: order.deliveryMethod,
-        deliveryProvider: order.deliveryProvider,
-        estimatedDelivery: order.estimatedDelivery?.toISOString(),
-        total: Number(order.total),
-        email: order.customerEmail,
-        paymentMethod: order.paymentMethod,
-      },
-    });
+    return NextResponse.json({ order: orderResponse });
   } catch (e) {
     console.error("POST /api/checkout", e);
     return NextResponse.json({ error: "Could not place your order. Please try again." }, { status: 500 });

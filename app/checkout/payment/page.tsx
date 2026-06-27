@@ -45,10 +45,13 @@ export default function PaymentPage() {
   }, [mounted, shipping, items, router]);
 
   const shippingCost = rates[deliveryMethod]?.price ?? 0;
+  const stripeMode = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 
   async function placeOrder() {
     if (!shipping) return;
-    if (method === "CARD" && (card.number.replace(/\s/g, "").length < 12 || !card.name)) {
+    // In demo mode we collect card details on our form; with Stripe they're
+    // entered on Stripe's secure page, so skip local card validation.
+    if (!stripeMode && method === "CARD" && (card.number.replace(/\s/g, "").length < 12 || !card.name)) {
       setError("Enter your card details to continue (this is a demo — no real charge).");
       return;
     }
@@ -86,6 +89,12 @@ export default function PaymentPage() {
         return;
       }
       setLastOrder(data.order);
+      // Real card payment → redirect to Stripe's hosted checkout. The cart is
+      // cleared on the success page so an abandoned payment keeps the bag.
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+        return;
+      }
       clearCart();
       clearCoupon();
       reset();
@@ -130,7 +139,12 @@ export default function PaymentPage() {
                   </button>
 
                   {/* Method-specific panel */}
-                  {method === m.id && m.id === "CARD" && (
+                  {method === m.id && m.id === "CARD" && stripeMode && (
+                    <div className="mt-3 border border-line bg-bone p-5 text-sm text-stone">
+                      You&apos;ll be redirected to <strong className="text-ink">Stripe&apos;s secure checkout</strong> to enter your card and complete payment. Visa, Mastercard, Apple Pay &amp; more accepted.
+                    </div>
+                  )}
+                  {method === m.id && m.id === "CARD" && !stripeMode && (
                     <div className="mt-3 grid gap-4 border border-line bg-bone p-5 sm:grid-cols-2">
                       <div className="sm:col-span-2">
                         <Field label="Card Number">

@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { Check, Package, Truck, CalendarClock, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCheckoutStore } from "@/store/checkout";
+import { useCartStore } from "@/store/cart";
+import { useCouponStore } from "@/store/coupon";
 import { formatDate } from "@/lib/format";
 import { useMoney } from "@/components/providers/CurrencyProvider";
 
@@ -21,7 +23,16 @@ export default function SuccessPage() {
   const [mounted, setMounted] = useState(false);
   const order = useCheckoutStore((s) => s.lastOrder);
   const { format: formatPrice } = useMoney();
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    // Once an order is confirmed, empty the bag (covers the Stripe return path
+    // where the cart wasn't cleared before redirect).
+    if (useCheckoutStore.getState().lastOrder) {
+      useCartStore.getState().clear();
+      useCouponStore.getState().clear();
+      useCheckoutStore.getState().reset();
+    }
+  }, []);
 
   if (!mounted) return <div className="container-luxe py-24" />;
 
