@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,17 +27,25 @@ export function ProductReviews({
   rating,
   reviewCount,
   reviews,
+  isAuthed = false,
+  isPurchaser = false,
+  hasReviewed = false,
 }: {
   productId: string;
   rating: number;
   reviewCount: number;
   reviews: ReviewItem[];
+  isAuthed?: boolean;
+  isPurchaser?: boolean;
+  hasReviewed?: boolean;
 }) {
-  const { data: session } = useSession();
+  const router = useRouter();
   const show = useToast((s) => s.show);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ rating: 5, title: "", comment: "" });
   const [submitting, setSubmitting] = useState(false);
+
+  const canReview = isAuthed && isPurchaser && !hasReviewed;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,12 +56,14 @@ export function ProductReviews({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productId, ...form }),
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         show("Review submitted for moderation");
         setOpen(false);
         setForm({ rating: 5, title: "", comment: "" });
+        router.refresh();
       } else {
-        show("Could not submit review");
+        show(data.error ?? "Could not submit review");
       }
     } finally {
       setSubmitting(false);
@@ -77,14 +87,20 @@ export function ProductReviews({
           ) : (
             <p className="mt-4 text-sm text-stone">No reviews yet — be the first to share your thoughts.</p>
           )}
-          {session ? (
-            <Button variant="outline" className="mt-6" onClick={() => setOpen(true)}>
-              Write a Review
-            </Button>
-          ) : (
+          {!isAuthed ? (
             <Link href="/login" className="mt-6 inline-block">
               <Button variant="outline">Sign in to Review</Button>
             </Link>
+          ) : canReview ? (
+            <Button variant="outline" className="mt-6" onClick={() => setOpen(true)}>
+              Write a Review
+            </Button>
+          ) : hasReviewed ? (
+            <p className="mt-6 text-xs text-stone">✓ You&apos;ve reviewed this product.</p>
+          ) : (
+            <p className="mt-6 max-w-xs text-xs leading-relaxed text-stone">
+              Only customers who have purchased this product can write a review.
+            </p>
           )}
         </div>
 

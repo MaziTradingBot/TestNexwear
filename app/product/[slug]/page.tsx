@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getProductBySlug, getSimilarProducts } from "@/lib/queries";
+import { userHasPurchased, userHasReviewed } from "@/lib/reviews";
 import { SITE } from "@/lib/constants";
 import { formatPrice } from "@/lib/format";
 import { ProductGallery } from "@/components/product/ProductGallery";
@@ -60,6 +63,18 @@ export default async function ProductPage({ params }: { params: { slug: string }
     isVerified: r.isVerified,
     createdAt: r.createdAt.toISOString(),
   }));
+
+  // Review eligibility: only verified buyers who haven't already reviewed.
+  const session = await getServerSession(authOptions);
+  const isAuthed = Boolean(session?.user?.id);
+  let isPurchaser = false;
+  let hasReviewed = false;
+  if (session?.user?.id) {
+    [isPurchaser, hasReviewed] = await Promise.all([
+      userHasPurchased(session.user.id, product.id),
+      userHasReviewed(session.user.id, product.id),
+    ]);
+  }
 
   const price = product.discountPrice ?? product.price;
   const departmentLabel = product.department[0].toUpperCase() + product.department.slice(1);
@@ -157,6 +172,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
           rating={product.rating}
           reviewCount={product.reviewCount}
           reviews={reviews}
+          isAuthed={isAuthed}
+          isPurchaser={isPurchaser}
+          hasReviewed={hasReviewed}
         />
       </div>
 
