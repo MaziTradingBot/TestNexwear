@@ -214,7 +214,8 @@ export const getTrending = (take = 8) =>
 
 export const getBestSellers = (take = 4) =>
   unstable_cache(
-    () => findCards({ isActive: true, reviewCount: { gt: 50 } }, { reviewCount: "desc" }, take),
+    // Ranked by real purchase popularity, not review counts.
+    () => findCards({ isActive: true }, { popularity: "desc" }, take),
     ["best-sellers", String(take)],
     { revalidate: CATALOG_TTL, tags: ["catalog"] },
   )();

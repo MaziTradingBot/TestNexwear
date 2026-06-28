@@ -66,13 +66,17 @@ export function ProductReviews({
         {/* Summary */}
         <div>
           <h2 className="font-serif text-2xl font-light uppercase tracking-wide2">Reviews</h2>
-          <div className="mt-4 flex items-center gap-3">
-            <span className="font-serif text-5xl">{rating.toFixed(1)}</span>
-            <div>
-              <Stars rating={rating} size={16} />
-              <p className="mt-1 text-xs text-stone">{reviewCount} reviews</p>
+          {reviewCount > 0 ? (
+            <div className="mt-4 flex items-center gap-3">
+              <span className="font-serif text-5xl">{rating.toFixed(1)}</span>
+              <div>
+                <Stars rating={rating} size={16} />
+                <p className="mt-1 text-xs text-stone">{reviewCount} review{reviewCount !== 1 ? "s" : ""}</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <p className="mt-4 text-sm text-stone">No reviews yet — be the first to share your thoughts.</p>
+          )}
           {session ? (
             <Button variant="outline" className="mt-6" onClick={() => setOpen(true)}>
               Write a Review

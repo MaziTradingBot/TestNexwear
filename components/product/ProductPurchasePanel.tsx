@@ -74,12 +74,16 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
       <p className="text-[0.72rem] uppercase tracking-luxe text-stone">{product.brand}</p>
       <h1 className="mt-2 font-serif text-3xl font-light text-ink md:text-4xl">{product.title}</h1>
 
-      <div className="mt-3 flex items-center gap-3">
-        <Stars rating={product.rating} />
-        <span className="text-xs text-stone">
-          {Number(product.rating).toFixed(1)} ({product.reviewCount} reviews)
-        </span>
-      </div>
+      {product.reviewCount > 0 ? (
+        <div className="mt-3 flex items-center gap-3">
+          <Stars rating={product.rating} />
+          <span className="text-xs text-stone">
+            {Number(product.rating).toFixed(1)} ({product.reviewCount} review{product.reviewCount !== 1 ? "s" : ""})
+          </span>
+        </div>
+      ) : (
+        <p className="mt-3 text-xs text-stone">No reviews yet</p>
+      )}
 
       <div className="mt-5 flex items-baseline gap-3">
         <span className={cn("text-2xl", onSale ? "text-sale" : "text-ink")}>
