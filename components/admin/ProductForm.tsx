@@ -174,6 +174,10 @@ export function ProductForm({
               </button>
             </div>
           </div>
+          <p className="mb-3 text-[0.7rem] leading-relaxed text-mist">
+            Pasting an image URL works instantly. To upload files from your device, connect a free
+            Vercel Blob store to this project (Storage → Create → Blob), then redeploy.
+          </p>
           <div className="space-y-3">
             {form.images.map((url, i) => (
               <div key={i} className="flex items-center gap-3">

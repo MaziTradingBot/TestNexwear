@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "@/components/ui/toast";
+import { AccountScopeGuard } from "@/components/providers/AccountScopeGuard";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { CurrencyProvider } from "@/components/providers/CurrencyProvider";
 import type { Locale } from "@/lib/i18n/messages";
@@ -18,6 +19,7 @@ export function Providers({
 }) {
   return (
     <SessionProvider>
+      <AccountScopeGuard />
       <I18nProvider locale={locale}>
         <CurrencyProvider currency={currency}>
           {children}

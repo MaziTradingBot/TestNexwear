@@ -1,13 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Star, ArrowDown } from "lucide-react";
 import { useT } from "@/components/providers/I18nProvider";
 
-const POSTER =
-  "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2000&q=80";
+/**
+ * Cinematic fashion film for the landing hero — a silent, auto-cycling montage
+ * of editorial clothing photography with a slow Ken Burns drift and crossfade.
+ * Pure CSS/JS motion, so it's reliable and fast with no video asset to manage.
+ */
+const SLIDES = [
+  { id: "photo-1490481651871-ab68de25d43d", alt: "Editorial fashion model" },
+  { id: "photo-1483985988355-763728e1935b", alt: "Woman with shopping bags" },
+  { id: "photo-1539109136881-3be0616acf4b", alt: "Street style outfit" },
+  { id: "photo-1469334031218-e382a71b716b", alt: "Curated clothing rail" },
+];
 
 const float = (delay = 0) => ({
   initial: { opacity: 0, y: 24 },
@@ -15,26 +25,51 @@ const float = (delay = 0) => ({
   transition: { duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] as const },
 });
 
-/**
- * Cinematic, floating landing hero — silent autoplaying background video with
- * glassy floating UI cards. Drop your own clip at `public/hero-video.mp4`.
- */
+function HeroFilm() {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setIndex((p) => (p + 1) % SLIDES.length), 5500);
+    return () => clearInterval(id);
+  }, []);
+
+  return (
+    <div className="absolute inset-0">
+      <AnimatePresence>
+        <motion.div
+          key={index}
+          className="absolute inset-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.6, ease: "easeInOut" }}
+        >
+          <motion.div
+            className="absolute inset-0"
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 7, ease: "linear" }}
+          >
+            <Image
+              src={`https://images.unsplash.com/${SLIDES[index].id}?auto=format&fit=crop&w=2000&q=80`}
+              alt={SLIDES[index].alt}
+              fill
+              priority={index === 0}
+              sizes="100vw"
+              className="object-cover"
+            />
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function LandingHero() {
   const t = useT();
   return (
     <section className="relative h-[92vh] min-h-[560px] w-full overflow-hidden bg-ink">
-      {/* Background film (silent, decorative) */}
-      <video
-        className="absolute inset-0 h-full w-full object-cover"
-        autoPlay
-        muted
-        loop
-        playsInline
-        poster={POSTER}
-        aria-hidden="true"
-      >
-        <source src="/hero-video.mp4" type="video/mp4" />
-      </video>
+      {/* Background fashion film */}
+      <HeroFilm />
 
       {/* Cinematic overlays */}
       <div className="absolute inset-0 bg-gradient-to-r from-ink/80 via-ink/40 to-ink/10" />
@@ -44,12 +79,7 @@ export function LandingHero() {
       {/* Content */}
       <div className="container-luxe relative z-10 flex h-full flex-col justify-center">
         <motion.div {...float(0.05)} className="max-w-2xl text-white">
-          <span className="inline-flex items-center gap-2 border border-white/30 bg-white/5 px-3 py-1.5 text-[0.6rem] font-medium uppercase tracking-luxe text-white/90 backdrop-blur sm:text-[0.62rem]">
-            <Sparkles className="h-3.5 w-3.5 text-gold" />
-            {t("hero.eyebrow")}
-          </span>
-
-          <h1 className="mt-6 font-serif text-5xl font-light uppercase leading-[0.92] tracking-wide2 sm:text-6xl md:text-7xl lg:text-8xl">
+          <h1 className="font-serif text-5xl font-light uppercase leading-[0.92] tracking-wide2 sm:text-6xl md:text-7xl lg:text-8xl">
             {t("hero.title1")}
             <span className="block text-gold-light">{t("hero.title2")}</span>
           </h1>
@@ -68,33 +98,6 @@ export function LandingHero() {
           </div>
         </motion.div>
       </div>
-
-      {/* Floating glass card — trending product */}
-      <motion.div {...float(0.5)} className="absolute right-6 top-28 z-10 hidden lg:block">
-        <motion.div
-          animate={{ y: [0, -14, 0] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="w-60 border border-white/20 bg-white/10 p-3 backdrop-blur-md"
-        >
-          <div className="relative aspect-[4/5] overflow-hidden">
-            <Image
-              src="https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80"
-              alt="Trending piece"
-              fill
-              sizes="240px"
-              className="object-cover"
-            />
-            <span className="absolute left-2 top-2 bg-gold px-2 py-0.5 text-[0.55rem] font-medium uppercase tracking-wide2 text-white">
-              Trending
-            </span>
-          </div>
-          <div className="mt-2.5 text-white">
-            <p className="text-[0.6rem] uppercase tracking-wide2 text-white/70">Maison Noir</p>
-            <p className="text-sm">Silk Slip Dress</p>
-            <p className="text-sm text-gold-light">$189.00</p>
-          </div>
-        </motion.div>
-      </motion.div>
 
       {/* Floating rating chip */}
       <motion.div {...float(0.75)} className="absolute right-16 bottom-32 z-10 hidden md:block">

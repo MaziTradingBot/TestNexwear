@@ -26,11 +26,15 @@ function sameLine(a: CartLine, b: { productId: string; variantId?: string; size?
 
 interface CartState {
   items: CartLine[];
+  /** The user id this cart belongs to (null = guest). Used to prevent one
+   *  account's bag leaking to the next person who signs in on the device. */
+  ownerId: string | null;
   addItem: (item: CartLine) => void;
   removeItem: (line: CartLine) => void;
   updateQuantity: (line: CartLine, quantity: number) => void;
   toggleSaveForLater: (line: CartLine) => void;
   clear: () => void;
+  setOwner: (ownerId: string | null) => void;
   totalItems: () => number;
   subtotal: () => number;
 }
@@ -39,6 +43,7 @@ export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       items: [],
+      ownerId: null,
 
       addItem: (item) =>
         set((state) => {
@@ -71,6 +76,8 @@ export const useCartStore = create<CartState>()(
         })),
 
       clear: () => set({ items: [] }),
+
+      setOwner: (ownerId) => set({ ownerId }),
 
       totalItems: () =>
         get().items.filter((i) => !i.savedForLater).reduce((s, i) => s + i.quantity, 0),

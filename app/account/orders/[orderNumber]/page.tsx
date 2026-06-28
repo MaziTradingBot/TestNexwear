@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/account/PrintButton";
+import { ReorderButton } from "@/components/account/ReorderButton";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Order", robots: { index: false } };
@@ -36,7 +37,10 @@ export default async function OrderDetailPage({ params }: { params: { orderNumbe
         <Link href="/account" className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wide2 text-stone hover:text-ink">
           <ArrowLeft className="h-4 w-4" /> Back to Account
         </Link>
-        <PrintButton />
+        <div className="flex items-center gap-5">
+          <ReorderButton orderNumber={order.orderNumber} />
+          <PrintButton />
+        </div>
       </div>
 
       {/* Invoice header */}

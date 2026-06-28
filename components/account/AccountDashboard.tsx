@@ -10,6 +10,7 @@ import { Field, Input } from "@/components/ui/input";
 import { COUNTRIES } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
+import { ReorderButton } from "@/components/account/ReorderButton";
 import { formatPrice, formatDate } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -168,7 +169,8 @@ function OrdersPanel({ orders }: { orders: Order[] }) {
               <p className="mt-1 text-sm text-ink">{o.estimatedDelivery ? formatDate(o.estimatedDelivery) : "—"}</p>
             </div>
           </div>
-          <div className="mt-4 border-t border-line pt-3 text-right">
+          <div className="mt-4 flex items-center justify-between gap-4 border-t border-line pt-3">
+            <ReorderButton orderNumber={o.orderNumber} />
             <Link href={`/account/orders/${o.orderNumber}`} className="text-xs font-medium uppercase tracking-wide2 text-ink underline-offset-4 hover:underline">
               View details &amp; track →
             </Link>
