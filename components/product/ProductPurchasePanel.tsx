@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, Minus, Plus, Ruler, Check } from "lucide-react";
+import { Heart, Minus, Plus, Ruler, Check, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Stars } from "@/components/ui/stars";
@@ -42,6 +42,10 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
   const onSale = product.discountPrice != null;
   const effective = product.discountPrice ?? product.price;
   const soldOut = product.variants.length > 0 && product.variants.every((v) => v.stock <= 0);
+
+  const fmtDate = (offsetDays: number) =>
+    new Date(Date.now() + offsetDays * 86_400_000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const deliveryRange = `${fmtDate(5)} – ${fmtDate(10)}`;
 
   function buildLine() {
     return {
@@ -212,6 +216,17 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
         </div>
       </div>
       </>
+      )}
+
+      {/* Estimated delivery */}
+      {!soldOut && (
+        <div className="mt-6 flex items-center gap-2.5 border border-line bg-bone/60 px-4 py-3 text-sm">
+          <Truck className="h-4 w-4 shrink-0 text-gold" />
+          <span className="text-ink">
+            Get it by <span className="font-medium">{deliveryRange}</span>
+            <span className="text-stone"> with standard delivery</span>
+          </span>
+        </div>
       )}
 
       {/* Trust strip */}

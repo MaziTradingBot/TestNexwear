@@ -9,6 +9,7 @@ import { formatPrice, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { PrintButton } from "@/components/account/PrintButton";
 import { ReorderButton } from "@/components/account/ReorderButton";
+import { CancelOrderButton } from "@/components/account/CancelOrderButton";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Order", robots: { index: false } };
@@ -29,6 +30,7 @@ export default async function OrderDetailPage({ params }: { params: { orderNumbe
   if (!order) notFound();
 
   const cancelled = order.status === "CANCELLED" || order.status === "RETURNED";
+  const cancellable = ["PENDING", "PAID", "PROCESSING"].includes(order.status);
   const currentStep = STEPS.indexOf(order.status as (typeof STEPS)[number]);
 
   return (
@@ -38,6 +40,7 @@ export default async function OrderDetailPage({ params }: { params: { orderNumbe
           <ArrowLeft className="h-4 w-4" /> Back to Account
         </Link>
         <div className="flex items-center gap-5">
+          {cancellable && <CancelOrderButton orderNumber={order.orderNumber} />}
           <ReorderButton orderNumber={order.orderNumber} />
           <PrintButton />
         </div>

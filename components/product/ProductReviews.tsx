@@ -19,6 +19,7 @@ export type ReviewItem = {
   comment: string;
   author: string;
   isVerified: boolean;
+  images: string[];
   createdAt: string;
 };
 
@@ -117,6 +118,16 @@ export function ProductReviews({
               </div>
               {r.title && <p className="mt-3 text-sm font-medium text-ink">{r.title}</p>}
               <p className="mt-2 text-sm leading-relaxed text-stone">{r.comment}</p>
+              {r.images.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {r.images.map((src, i) => (
+                    <a key={i} href={src} target="_blank" rel="noopener noreferrer" className="relative h-20 w-20 overflow-hidden bg-bone">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={src} alt="Customer photo" className="h-full w-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              )}
               <p className="mt-3 text-xs text-stone">
                 {r.author}
                 {r.isVerified && <span className="ml-2 text-gold">✓ Verified Buyer</span>}

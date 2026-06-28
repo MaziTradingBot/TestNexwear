@@ -4,9 +4,11 @@ import type { ProductCard as ProductCardData } from "@/lib/queries";
 export function ProductGrid({
   products,
   priorityCount = 0,
+  badge,
 }: {
   products: ProductCardData[];
   priorityCount?: number;
+  badge?: string;
 }) {
   if (products.length === 0) {
     return (
@@ -19,7 +21,7 @@ export function ProductGrid({
   return (
     <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-3 lg:grid-cols-4">
       {products.map((p, i) => (
-        <ProductCard key={p.id} product={p} priority={i < priorityCount} />
+        <ProductCard key={p.id} product={p} priority={i < priorityCount} badge={badge} />
       ))}
     </div>
   );

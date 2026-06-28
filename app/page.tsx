@@ -111,7 +111,7 @@ export default async function HomePage() {
       {bestSellers.length > 0 && (
         <section className="container-luxe">
           <SectionHeader eyebrow="Customer Favourites" title="Best Sellers" href="/sale" />
-          <ProductGrid products={bestSellers} />
+          <ProductGrid products={bestSellers} badge="Best Seller" />
         </section>
       )}
 

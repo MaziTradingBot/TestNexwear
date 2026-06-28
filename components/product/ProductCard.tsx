@@ -14,9 +14,12 @@ import { cn } from "@/lib/cn";
 export function ProductCard({
   product,
   priority = false,
+  badge,
 }: {
   product: ProductCardData;
   priority?: boolean;
+  /** Optional contextual label, e.g. "Best Seller". */
+  badge?: string;
 }) {
   const wished = useWishlistStore((s) => s.items.some((i) => i.productId === product.id));
   const toggle = useWishlistStore((s) => s.toggle);
@@ -85,6 +88,11 @@ export function ProductCard({
 
           {/* Badges */}
           <div className="absolute left-3 top-3 flex flex-col gap-1.5">
+            {!product.outOfStock && badge && (
+              <span className="bg-gold px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-wide2 text-white">
+                {badge}
+              </span>
+            )}
             {product.outOfStock ? null : onSale && (
               <span className="bg-sale px-2.5 py-1 text-[0.6rem] font-medium uppercase tracking-wide2 text-white">
                 -{pct}%

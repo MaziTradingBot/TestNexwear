@@ -121,6 +121,18 @@ export function backInStockEmail(product: { title: string; brand?: string | null
   };
 }
 
+export function orderCancelledEmail(opts: { orderNumber: string; customerName: string; total: number; refunded: boolean }) {
+  return {
+    subject: `Your NexWear order ${opts.orderNumber} was cancelled`,
+    text: `Hi ${opts.customerName}, your order ${opts.orderNumber} has been cancelled.${opts.refunded ? ` A refund of $${opts.total.toFixed(2)} has been issued.` : ""}`,
+    html: shell(`
+      <p style="text-transform:uppercase;letter-spacing:.2em;font-size:11px;color:#B07A3E">Order Cancelled</p>
+      <p>Hi ${opts.customerName}, your order <strong>${opts.orderNumber}</strong> has been cancelled${opts.refunded ? " and a refund has been issued" : ""}.</p>
+      ${opts.refunded ? `<p style="font-size:14px">Refund amount: <strong>$${opts.total.toFixed(2)}</strong> — it may take 5–10 business days to appear on your statement.</p>` : ""}
+      <p style="color:#6B6B6B;font-size:13px">Changed your mind? You're always welcome back at NexWear.</p>`),
+  };
+}
+
 export function contactNotificationEmail(name: string, email: string, subject: string, message: string) {
   return {
     subject: `[Contact] ${subject}`,

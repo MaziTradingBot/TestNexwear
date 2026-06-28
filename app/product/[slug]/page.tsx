@@ -11,6 +11,7 @@ import { SITE } from "@/lib/constants";
 import { formatPrice } from "@/lib/format";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import { ProductPurchasePanel } from "@/components/product/ProductPurchasePanel";
+import { ProductShare } from "@/components/product/ProductShare";
 import { ProductReviews, type ReviewItem } from "@/components/product/ProductReviews";
 import { RecentlyViewedTracker } from "@/components/product/RecentlyViewedTracker";
 import { RecentlyViewed } from "@/components/product/RecentlyViewed";
@@ -61,6 +62,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
     comment: r.comment,
     author: r.user.name ?? "NexWear Customer",
     isVerified: r.isVerified,
+    images: r.images ?? [],
     createdAt: r.createdAt.toISOString(),
   }));
 
@@ -78,6 +80,21 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const price = product.discountPrice ?? product.price;
   const departmentLabel = product.department[0].toUpperCase() + product.department.slice(1);
+
+  // Material-aware care note for clothing.
+  const m = (product.material ?? "").toLowerCase();
+  const careNote =
+    m.includes("wool") || m.includes("cashmere")
+      ? "Wool / cashmere: hand wash cold or dry clean to protect the fibres."
+      : m.includes("silk")
+        ? "Silk: dry clean or gentle cold hand wash; do not wring."
+        : m.includes("leather") || m.includes("suede")
+          ? "Leather / suede: wipe clean, treat with a suitable protector and keep dry."
+          : m.includes("linen")
+            ? "Linen: natural creasing is part of its character; iron while slightly damp."
+            : m.includes("denim")
+              ? "Denim: wash inside out in cold water to keep the colour rich."
+              : null;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -150,6 +167,17 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     ),
                   },
                   {
+                    title: "Care Instructions",
+                    content: (
+                      <ul className="space-y-1.5">
+                        <li>Machine wash cold with similar colours.</li>
+                        <li>Do not bleach. Tumble dry low or hang to dry.</li>
+                        <li>Cool iron on reverse if needed; do not iron over prints.</li>
+                        {careNote && <li className="text-ink">{careNote}</li>}
+                      </ul>
+                    ),
+                  },
+                  {
                     title: "Shipping & Returns",
                     content: (
                       <div className="space-y-2">
@@ -161,6 +189,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 ]}
               />
             </div>
+
+            <ProductShare title={product.title} />
           </div>
         </div>
       </div>
