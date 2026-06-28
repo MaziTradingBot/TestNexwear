@@ -4,11 +4,13 @@ import { LandingHero } from "@/components/home/LandingHero";
 import { CategoryGrid } from "@/components/home/CategoryGrid";
 import { EditorialSplit } from "@/components/home/EditorialSplit";
 import { BrandMarquee } from "@/components/home/BrandMarquee";
+import { PromoBanners } from "@/components/home/PromoBanners";
 import { FlashSale } from "@/components/home/FlashSale";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
 import { ProductGrid } from "@/components/product/ProductGrid";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import {
+  getBanners,
   getBrands,
   getNewArrivals,
   getTrending,
@@ -25,8 +27,9 @@ const INSTAGRAM = [
 ];
 
 export default async function HomePage() {
-  const [brands, newArrivals, trending, bestSellers, saleProducts] =
+  const [banners, brands, newArrivals, trending, bestSellers, saleProducts] =
     await Promise.all([
+      getBanners(),
       getBrands(),
       getNewArrivals(8),
       getTrending(8),
@@ -51,6 +54,19 @@ export default async function HomePage() {
           <ProductCarousel products={newArrivals} />
         </section>
       )}
+
+      {/* Admin-managed promo banners */}
+      <PromoBanners
+        banners={banners.map((b) => ({
+          id: b.id,
+          eyebrow: b.eyebrow,
+          title: b.title,
+          subtitle: b.subtitle,
+          ctaLabel: b.ctaLabel,
+          ctaHref: b.ctaHref,
+          imageUrl: b.imageUrl,
+        }))}
+      />
 
       {/* Editorial split */}
       <section className="container-luxe">

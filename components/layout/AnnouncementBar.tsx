@@ -8,7 +8,7 @@ export function AnnouncementBar() {
   // Duplicate the list so the marquee translate loops seamlessly.
   const items = [...base, ...base];
   return (
-    <div className="marquee-paused overflow-hidden bg-ink py-2.5 text-white">
+    <div className="marquee-paused overflow-hidden bg-ink py-2.5 text-white print:hidden">
       <div className="marquee-track flex w-max whitespace-nowrap">
         {items.map((m, i) => (
           <span

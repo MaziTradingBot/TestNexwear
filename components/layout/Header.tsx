@@ -40,7 +40,7 @@ export function Header() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-line bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/80">
+      <header className="sticky top-0 z-50 border-b border-line bg-cream/95 backdrop-blur supports-[backdrop-filter]:bg-cream/80 print:hidden">
         <div
           className="container-luxe"
           onMouseLeave={() => setHovered(null)}

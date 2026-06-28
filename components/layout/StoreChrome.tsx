@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { AnnouncementBar } from "@/components/layout/AnnouncementBar";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { CookieConsent } from "@/components/layout/CookieConsent";
 
 /**
  * Renders the storefront chrome (announcement bar, header, footer) around the
@@ -23,6 +24,7 @@ export function StoreChrome({ children }: { children: React.ReactNode }) {
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
+      <CookieConsent />
     </>
   );
 }

@@ -23,8 +23,8 @@ const COLUMNS = [
     links: [
       { label: "Contact Us", href: "/contact" },
       { label: "FAQ", href: "/faq" },
-      { label: "Shipping & Delivery", href: "/faq" },
-      { label: "Returns", href: "/faq" },
+      { label: "Shipping & Delivery", href: "/shipping" },
+      { label: "Returns", href: "/returns" },
       { label: "Track Order", href: "/account" },
     ],
   },
@@ -52,7 +52,7 @@ const PAYMENTS = ["Visa", "Mastercard", "Apple Pay", "Google Pay", "PayPal"];
 export function Footer() {
   const t = useT();
   return (
-    <footer className="mt-24 border-t border-line bg-bone">
+    <footer className="mt-24 border-t border-line bg-bone print:hidden">
       {/* Newsletter */}
       <div className="border-b border-line">
         <div className="container-luxe grid gap-8 py-14 md:grid-cols-2 md:items-center">

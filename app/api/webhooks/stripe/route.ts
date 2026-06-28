@@ -45,10 +45,15 @@ export async function POST(req: Request) {
         });
 
         if (order.userId) {
-          await prisma.user.update({
-            where: { id: order.userId },
-            data: { loyaltyPoints: { increment: Math.floor(Number(order.total)) } },
-          }).catch(() => null);
+          // Earn 1 point per $1, minus any points redeemed on this order.
+          const redeemed = Number(session.metadata?.pointsRedeemed ?? 0) || 0;
+          const delta = Math.floor(Number(order.total)) - redeemed;
+          if (delta !== 0) {
+            await prisma.user.update({
+              where: { id: order.userId },
+              data: { loyaltyPoints: { increment: delta } },
+            }).catch(() => null);
+          }
         }
 
         sendMail({

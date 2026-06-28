@@ -142,11 +142,25 @@ model Product {
   orderItems OrderItem[]
   relatedTo  ProductRelation[] @relation("RelatedFrom")
   relatedBy  ProductRelation[] @relation("RelatedTo")
+  stockAlerts StockNotification[]
 
   @@index([categoryId])
   @@index([brandId])
   @@index([department])
   @@index([discountPrice])
+}
+
+// Back-in-stock waitlist: email the customer when a sold-out product restocks.
+model StockNotification {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  email     String
+  notified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([productId, email])
+  @@index([productId])
 }
 
 // Self-relation for "Similar / You may also like"

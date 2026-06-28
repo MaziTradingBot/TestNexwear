@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  const { items, shipping, deliveryMethod, deliveryProvider, paymentMethod, couponCode, notes } = parsed.data;
+  const { items, shipping, deliveryMethod, deliveryProvider, paymentMethod, couponCode, pointsRedeemed, notes } = parsed.data;
 
   // 1. Re-price from DB (never trust client prices)
   const products = await prisma.product.findMany({
@@ -82,6 +82,23 @@ export async function POST(req: Request) {
       discount = Math.min(Math.round(discount * 100) / 100, subtotal);
       appliedCode = coupon.code;
       await prisma.coupon.update({ where: { id: coupon.id }, data: { usedCount: { increment: 1 } } }).catch(() => null);
+    }
+  }
+
+  // 2b. Loyalty points redemption (100 pts = $1), signed-in customers only.
+  // Re-validated against the live balance — never trust the client amount.
+  let pointsToRedeem = 0;
+  if (session?.user?.id && pointsRedeemed && pointsRedeemed > 0) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { loyaltyPoints: true },
+    });
+    const balance = user?.loyaltyPoints ?? 0;
+    const redeemableValue = Math.max(0, subtotal - discount);
+    const maxPoints = Math.min(balance, Math.floor(redeemableValue * 100));
+    pointsToRedeem = Math.max(0, Math.min(Math.floor(pointsRedeemed), maxPoints));
+    if (pointsToRedeem > 0) {
+      discount = Math.min(subtotal, discount + pointsToRedeem / 100);
     }
   }
 
@@ -154,13 +171,17 @@ export async function POST(req: Request) {
         }
       }
 
-      // Award loyalty points (1 per $1) once paid. Stripe orders earn points
-      // in the webhook after payment succeeds.
+      // Loyalty points. Non-Stripe orders settle now: earn 1/$1 and subtract
+      // any redeemed points in a single net adjustment. Stripe orders settle
+      // in the webhook once paid, so points aren't touched on abandonment.
       if (session?.user?.id && !useStripe) {
-        await tx.user.update({
-          where: { id: session.user.id },
-          data: { loyaltyPoints: { increment: Math.floor(total) } },
-        }).catch(() => null);
+        const delta = Math.floor(total) - pointsToRedeem;
+        if (delta !== 0) {
+          await tx.user.update({
+            where: { id: session.user.id },
+            data: { loyaltyPoints: { increment: delta } },
+          }).catch(() => null);
+        }
       }
 
       return created;
@@ -176,6 +197,28 @@ export async function POST(req: Request) {
       email: order.customerEmail,
       paymentMethod: order.paymentMethod,
     };
+
+    // Save the shipping address to the user's address book (deduped).
+    if (session?.user?.id) {
+      const existing = await prisma.address.findFirst({
+        where: { userId: session.user.id, address: shipping.address, postalCode: shipping.postalCode, city: shipping.city },
+      });
+      if (!existing) {
+        const count = await prisma.address.count({ where: { userId: session.user.id } });
+        await prisma.address.create({
+          data: {
+            userId: session.user.id,
+            fullName: shipping.fullName,
+            phone: shipping.phone,
+            country: shipping.country,
+            city: shipping.city,
+            address: shipping.address,
+            postalCode: shipping.postalCode,
+            isDefault: count === 0,
+          },
+        }).catch(() => null);
+      }
+    }
 
     // Real card payment → create a Stripe Checkout Session and redirect.
     if (useStripe && stripe) {
@@ -212,7 +255,7 @@ export async function POST(req: Request) {
         customer_email: shipping.email,
         line_items: lineItems,
         discounts,
-        metadata: { orderNumber: order.orderNumber, orderId: order.id },
+        metadata: { orderNumber: order.orderNumber, orderId: order.id, pointsRedeemed: String(pointsToRedeem) },
         success_url: `${SITE.url}/checkout/success?order=${order.orderNumber}`,
         cancel_url: `${SITE.url}/checkout/payment`,
       });

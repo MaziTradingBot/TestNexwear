@@ -6,6 +6,7 @@ import { Heart, Minus, Plus, Ruler, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Stars } from "@/components/ui/stars";
+import { NotifyBackInStock } from "@/components/product/NotifyBackInStock";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
 import { useToast } from "@/components/ui/toast";
@@ -40,6 +41,7 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
   const selectedVariant = product.variants.find((v) => v.color === color && v.size === size);
   const onSale = product.discountPrice != null;
   const effective = product.discountPrice ?? product.price;
+  const soldOut = product.variants.length > 0 && product.variants.every((v) => v.stock <= 0);
 
   function buildLine() {
     return {
@@ -118,6 +120,10 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
         </div>
       </div>
 
+      {soldOut ? (
+        <NotifyBackInStock productId={product.id} />
+      ) : (
+      <>
       {/* Size */}
       <div className="mt-7">
         <div className="mb-2 flex items-center justify-between">
@@ -201,6 +207,8 @@ export function ProductPurchasePanel({ product }: { product: ProductDetail }) {
           </Button>
         </div>
       </div>
+      </>
+      )}
 
       {/* Trust strip */}
       <ul className="mt-8 space-y-2 border-t border-line pt-6 text-xs text-stone">

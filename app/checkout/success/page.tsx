@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useCheckoutStore } from "@/store/checkout";
 import { useCartStore } from "@/store/cart";
 import { useCouponStore } from "@/store/coupon";
+import { usePointsStore } from "@/store/points";
 import { formatDate } from "@/lib/format";
 import { useMoney } from "@/components/providers/CurrencyProvider";
 
@@ -30,6 +31,7 @@ export default function SuccessPage() {
     if (useCheckoutStore.getState().lastOrder) {
       useCartStore.getState().clear();
       useCouponStore.getState().clear();
+      usePointsStore.getState().clear();
       useCheckoutStore.getState().reset();
     }
   }, []);

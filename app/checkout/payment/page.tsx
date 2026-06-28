@@ -9,6 +9,7 @@ import { CheckoutSteps } from "@/components/checkout/CheckoutSteps";
 import { OrderSummary } from "@/components/checkout/OrderSummary";
 import { useCartStore } from "@/store/cart";
 import { useCouponStore } from "@/store/coupon";
+import { usePointsStore } from "@/store/points";
 import { useCheckoutStore } from "@/store/checkout";
 import { useToast } from "@/components/ui/toast";
 import { PAYMENT_METHODS } from "@/lib/constants";
@@ -30,6 +31,8 @@ export default function PaymentPage() {
   const clearCart = useCartStore((s) => s.clear);
   const couponCode = useCouponStore((s) => s.coupon?.code ?? null);
   const clearCoupon = useCouponStore((s) => s.clear);
+  const pointsRedeemed = usePointsStore((s) => Math.min(s.redeem, s.balance));
+  const clearPoints = usePointsStore((s) => s.clear);
   const { shipping, deliveryMethod, deliveryProvider, rates, setLastOrder, reset } = useCheckoutStore();
   const show = useToast((s) => s.show);
 
@@ -76,6 +79,7 @@ export default function PaymentPage() {
         deliveryProvider,
         paymentMethod: method,
         couponCode,
+        pointsRedeemed,
       };
       const res = await fetch("/api/checkout", {
         method: "POST",
@@ -97,6 +101,7 @@ export default function PaymentPage() {
       }
       clearCart();
       clearCoupon();
+      clearPoints();
       reset();
       show("Order placed");
       router.push("/checkout/success");

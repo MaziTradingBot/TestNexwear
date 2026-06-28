@@ -32,6 +32,7 @@ export const checkoutSchema = z.object({
     "CARD", "APPLE_PAY", "GOOGLE_PAY", "BANK_TRANSFER", "CASH_ON_DELIVERY",
   ]),
   couponCode: z.string().max(40).optional().nullable(),
+  pointsRedeemed: z.number().int().nonnegative().max(10_000_000).optional(),
   notes: z.string().max(500).optional(),
 });
 

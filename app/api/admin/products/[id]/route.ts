@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { guardAdminApi } from "@/lib/admin";
 import { slugify } from "@/lib/slug";
 import { productInput } from "@/lib/validations/product";
+import { notifyRestock } from "@/lib/stock-notify";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,14 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   const category = await prisma.category.findUnique({ where: { id: d.categoryId } });
   if (!category) return NextResponse.json({ error: "Category not found" }, { status: 400 });
+
+  // Detect a sold-out → in-stock transition so we can notify the waitlist.
+  const prevAgg = await prisma.productVariant.aggregate({
+    where: { productId: params.id },
+    _sum: { stock: true },
+  });
+  const prevStock = Number(prevAgg._sum.stock ?? 0);
+  const newStock = d.variants.reduce((s, v) => s + v.stock, 0);
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -59,6 +68,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       });
     });
     revalidateTag("catalog");
+
+    // Restocked? Email the back-in-stock waitlist (non-blocking).
+    if (prevStock <= 0 && newStock > 0) {
+      void notifyRestock(params.id);
+    }
+
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("PATCH /api/admin/products/[id]", e);

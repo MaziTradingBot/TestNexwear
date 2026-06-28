@@ -3,12 +3,17 @@ import { Package, ShoppingCart, DollarSign, Users, Tag, Clock, AlertTriangle } f
 import { prisma } from "@/lib/prisma";
 import { formatPrice, formatDate } from "@/lib/format";
 import { AdminHeader, AdminCard } from "@/components/admin/AdminShell";
+import { SalesChart, type SalesPoint } from "@/components/admin/SalesChart";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
-  const [productCount, orderCount, customerCount, brandCount, paidAgg, recentOrders, stockRows] =
+  const chartStart = new Date();
+  chartStart.setHours(0, 0, 0, 0);
+  chartStart.setDate(chartStart.getDate() - 13);
+
+  const [productCount, orderCount, customerCount, brandCount, paidAgg, recentOrders, stockRows, salesRows] =
     await Promise.all([
       prisma.product.count(),
       prisma.order.count(),
@@ -24,10 +29,37 @@ export default async function AdminDashboard() {
         include: { _count: { select: { items: true } } },
       }),
       prisma.product.findMany({ where: { isActive: true }, select: { variants: { select: { stock: true } } } }),
+      prisma.order.findMany({
+        where: { createdAt: { gte: chartStart }, paymentStatus: { in: ["PAID", "SIMULATED"] } },
+        select: { createdAt: true, total: true },
+      }),
     ]);
 
   const revenue = Number(paidAgg._sum.total ?? 0);
   const lowStock = stockRows.filter((p) => p.variants.reduce((s, v) => s + v.stock, 0) <= 5).length;
+
+  // Build 14 daily buckets for the sales chart.
+  const buckets = new Map<number, { revenue: number; orders: number }>();
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(chartStart);
+    d.setDate(d.getDate() + i);
+    buckets.set(d.getTime(), { revenue: 0, orders: 0 });
+  }
+  for (const o of salesRows) {
+    const d = new Date(o.createdAt);
+    d.setHours(0, 0, 0, 0);
+    const b = buckets.get(d.getTime());
+    if (b) { b.revenue += Number(o.total); b.orders += 1; }
+  }
+  const salesData: SalesPoint[] = Array.from(buckets, ([ts, v]) => {
+    const d = new Date(ts);
+    return {
+      label: String(d.getDate()),
+      full: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+      revenue: v.revenue,
+      orders: v.orders,
+    };
+  });
 
   const cards = [
     { label: "Revenue", value: formatPrice(revenue), icon: DollarSign },
@@ -53,6 +85,10 @@ export default async function AdminDashboard() {
           </AdminCard>
         ))}
       </div>
+
+      <AdminCard className="mt-6 p-6">
+        <SalesChart data={salesData} />
+      </AdminCard>
 
       <div className="mt-10">
         <div className="mb-4 flex items-center justify-between">

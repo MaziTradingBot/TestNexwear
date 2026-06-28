@@ -8,6 +8,8 @@ import { Minus, Plus, X, ShoppingBag, Tag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartStore, type CartLine } from "@/store/cart";
 import { useCouponStore } from "@/store/coupon";
+import { usePointsStore } from "@/store/points";
+import { PointsRedeem } from "@/components/checkout/PointsRedeem";
 import { useToast } from "@/components/ui/toast";
 import { useT } from "@/components/providers/I18nProvider";
 import { useMoney } from "@/components/providers/CurrencyProvider";
@@ -39,6 +41,7 @@ export default function CartPage() {
   const active = items.filter((i) => !i.savedForLater);
   const saved = items.filter((i) => i.savedForLater);
   const discount = discountFor(subtotal);
+  const pointsDiscount = usePointsStore((s) => s.discountFor(Math.max(0, subtotal - discount)));
   const remaining = Math.max(0, FREE_SHIP_THRESHOLD - subtotal);
 
   async function applyCoupon(e: React.FormEvent) {
@@ -176,6 +179,9 @@ export default function CartPage() {
               )}
             </form>
 
+            {/* Loyalty points redemption */}
+            <PointsRedeem />
+
             <dl className="space-y-3 border-t border-line pt-5 text-sm">
               <div className="flex justify-between">
                 <dt className="text-stone">{t("cart.subtotal")}</dt>
@@ -187,13 +193,19 @@ export default function CartPage() {
                   <dd>−{formatPrice(discount)}</dd>
                 </div>
               )}
+              {pointsDiscount > 0 && (
+                <div className="flex justify-between text-gold">
+                  <dt>Points</dt>
+                  <dd>−{formatPrice(pointsDiscount)}</dd>
+                </div>
+              )}
               <div className="flex justify-between">
                 <dt className="text-stone">{t("cart.shipping")}</dt>
                 <dd className="text-stone">—</dd>
               </div>
               <div className="flex justify-between border-t border-line pt-4 text-base font-medium">
                 <dt>{t("cart.total")}</dt>
-                <dd>{formatPrice(Math.max(0, subtotal - discount))}</dd>
+                <dd>{formatPrice(Math.max(0, subtotal - discount - pointsDiscount))}</dd>
               </div>
             </dl>
 

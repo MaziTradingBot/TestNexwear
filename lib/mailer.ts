@@ -107,6 +107,20 @@ export function orderConfirmationEmail(order: {
   };
 }
 
+export function backInStockEmail(product: { title: string; brand?: string | null; url: string }) {
+  return {
+    subject: `Back in stock: ${product.title}`,
+    text: `Good news — ${product.title} is back in stock. Shop now: ${product.url}`,
+    html: shell(`
+      <p style="text-transform:uppercase;letter-spacing:.2em;font-size:11px;color:#B07A3E">Back In Stock</p>
+      <p>Good news — the piece you wanted is available again.</p>
+      ${product.brand ? `<p style="font-size:12px;text-transform:uppercase;letter-spacing:.15em;color:#6B6B6B;margin-bottom:2px">${product.brand}</p>` : ""}
+      <p style="font-family:Georgia,serif;font-size:20px;margin-top:0">${product.title}</p>
+      <p style="margin:24px 0"><a href="${product.url}" style="background:#0A0A0A;color:#fff;padding:14px 28px;text-decoration:none;text-transform:uppercase;letter-spacing:.15em;font-size:12px">Shop Now</a></p>
+      <p style="color:#9A9A9A;font-size:12px">Stock is limited — once it's gone, it may not return.</p>`),
+  };
+}
+
 export function contactNotificationEmail(name: string, email: string, subject: string, message: string) {
   return {
     subject: `[Contact] ${subject}`,

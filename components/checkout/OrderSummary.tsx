@@ -3,15 +3,18 @@
 import Image from "next/image";
 import { useCartStore } from "@/store/cart";
 import { useCouponStore } from "@/store/coupon";
+import { usePointsStore, useSyncPointsBalance } from "@/store/points";
 import { useMoney } from "@/components/providers/CurrencyProvider";
 
 export function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
+  useSyncPointsBalance();
   const items = useCartStore((s) => s.items).filter((i) => !i.savedForLater);
   const subtotal = useCartStore((s) => s.subtotal());
   const discount = useCouponStore((s) => s.discountFor(subtotal));
   const coupon = useCouponStore((s) => s.coupon);
+  const pointsDiscount = usePointsStore((s) => s.discountFor(Math.max(0, subtotal - discount)));
   const { format: formatPrice } = useMoney();
-  const total = Math.max(0, subtotal - discount) + shippingCost;
+  const total = Math.max(0, subtotal - discount - pointsDiscount) + shippingCost;
 
   return (
     <div className="border border-line p-6">
@@ -46,6 +49,12 @@ export function OrderSummary({ shippingCost = 0 }: { shippingCost?: number }) {
           <div className="flex justify-between text-gold">
             <dt>Discount {coupon && `(${coupon.code})`}</dt>
             <dd>−{formatPrice(discount)}</dd>
+          </div>
+        )}
+        {pointsDiscount > 0 && (
+          <div className="flex justify-between text-gold">
+            <dt>Points</dt>
+            <dd>−{formatPrice(pointsDiscount)}</dd>
           </div>
         )}
         <div className="flex justify-between">
