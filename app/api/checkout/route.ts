@@ -256,7 +256,7 @@ export async function POST(req: Request) {
         line_items: lineItems,
         discounts,
         metadata: { orderNumber: order.orderNumber, orderId: order.id, pointsRedeemed: String(pointsToRedeem) },
-        success_url: `${SITE.url}/checkout/success?order=${order.orderNumber}`,
+        success_url: `${SITE.url}/checkout/success?order=${order.orderNumber}&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${SITE.url}/checkout/payment`,
       });
 

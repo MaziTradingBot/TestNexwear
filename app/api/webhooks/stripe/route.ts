@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
-import { prisma } from "@/lib/prisma";
-import { sendMail, orderConfirmationEmail } from "@/lib/mailer";
+import { settleOrderPaid } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
 
@@ -30,46 +29,10 @@ export async function POST(req: Request) {
     const orderId = session.metadata?.orderId;
 
     if (orderId && session.payment_status === "paid") {
-      const existing = await prisma.order.findUnique({ where: { id: orderId } });
-
-      // Idempotent: only act the first time we see a paid order.
-      if (existing && existing.paymentStatus !== "PAID") {
-        const order = await prisma.order.update({
-          where: { id: orderId },
-          data: {
-            status: "PAID",
-            paymentStatus: "PAID",
-            payment: { update: { status: "PAID", providerRefId: String(session.payment_intent ?? session.id) } },
-          },
-          include: { items: true },
-        });
-
-        if (order.userId) {
-          // Earn 1 point per $1, minus any points redeemed on this order.
-          const redeemed = Number(session.metadata?.pointsRedeemed ?? 0) || 0;
-          const delta = Math.floor(Number(order.total)) - redeemed;
-          if (delta !== 0) {
-            await prisma.user.update({
-              where: { id: order.userId },
-              data: { loyaltyPoints: { increment: delta } },
-            }).catch(() => null);
-          }
-        }
-
-        sendMail({
-          to: order.customerEmail,
-          ...orderConfirmationEmail({
-            orderNumber: order.orderNumber,
-            customerName: order.customerName,
-            total: Number(order.total),
-            trackingNumber: order.trackingNumber,
-            estimatedDelivery: order.estimatedDelivery,
-            items: order.items.map((i) => ({
-              title: i.title, quantity: i.quantity, unitPrice: Number(i.unitPrice), size: i.size, color: i.color,
-            })),
-          }),
-        }).catch((e) => console.error("[stripe webhook] email failed", e));
-      }
+      await settleOrderPaid(orderId, {
+        paymentRef: String(session.payment_intent ?? session.id),
+        pointsRedeemed: Number(session.metadata?.pointsRedeemed ?? 0) || 0,
+      });
     }
   }
 

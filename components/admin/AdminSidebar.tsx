@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
-  LayoutDashboard, Package, Tag, FolderTree, ShoppingCart,
+  LayoutDashboard, BarChart3, Package, Tag, FolderTree, ShoppingCart,
   Ticket, Users, Star, Mail, Image as ImageIcon, ExternalLink, LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/brands", label: "Brands", icon: Tag },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },

@@ -34,6 +34,17 @@ export default function SuccessPage() {
       usePointsStore.getState().clear();
       useCheckoutStore.getState().reset();
     }
+
+    // Returning from Stripe's hosted checkout? Confirm the payment server-side
+    // so the order flips to PAID right away, even if the webhook is delayed.
+    const sessionId = new URLSearchParams(window.location.search).get("session_id");
+    if (sessionId) {
+      fetch("/api/checkout/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      }).catch(() => {});
+    }
   }, []);
 
   if (!mounted) return <div className="container-luxe py-24" />;
